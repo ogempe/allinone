@@ -1891,6 +1891,24 @@ function saveSheetsUrl() {
   showSyncStatus('✅ Link zapisany! Teraz kliknij Synchronizuj.', 'success');
 }
 
+function parseCSVLine(line) {
+  const result = [];
+  let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else { inQ = !inQ; }
+    } else if (ch === ',' && !inQ) {
+      result.push(cur.trim()); cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
 async function syncFromSheets() {
   const url = document.getElementById('sheetsUrlInput').value.trim() || appState.sheetsUrl;
   if (!url) { showSyncStatus('Najpierw wklej link do arkusza Google Sheets!', 'error'); return; }
@@ -1900,22 +1918,60 @@ async function syncFromSheets() {
   try {
     const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
     if (!match) throw new Error('Nieprawidłowy link. Skopiuj link z paska adresu Google Sheets.');
-    const gidMatch = url.match(/gid=(\d+)/);
-    const csvUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv&gid=${gidMatch?gidMatch[1]:'0'}`;
+    const sheetId = match[1];
+
+    // Wyciągnij gid z linku (obsługa obu formatów: ?gid= i #gid=)
+    const gidMatch = url.match(/[#?&]gid=(\d+)/) || url.match(/gid=(\d+)/);
+    const gid = gidMatch ? gidMatch[1] : '0';
+
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+    console.log('Pobieranie CSV z:', csvUrl);
+
     const response = await fetch(csvUrl);
-    if (!response.ok) throw new Error('Nie można pobrać danych. Sprawdź czy arkusz jest udostępniony publicznie.');
+    if (!response.ok) throw new Error(`Błąd ${response.status} — sprawdź czy arkusz jest udostępniony publicznie (Udostępnij → Każda osoba z linkiem).`);
+
     const text = await response.text();
-    const rows = text.trim().split('\n').map(l => l.split(',').map(c=>c.replace(/^"|"$/g,'').trim()));
-    if (rows.length < 2) throw new Error('Arkusz jest pusty lub ma nieprawidłowy format.');
-    appState.syncedData = rows.slice(1).map(r => ({ product:r[0]||'—', price:r[1]||'0', status:r[2]||'—', date:r[3]||'—', buyer:r[4]||'—', platform:r[5]||'Vinted' })).filter(r=>r.product!=='—');
+    console.log('Pierwsze 200 znaków CSV:', text.substring(0, 200));
+
+    const lines = text.trim().split('\n').filter(l => l.trim());
+    if (lines.length < 2) throw new Error('Arkusz jest pusty — sprawdź czy skrypt Apps Script wpisał dane do zakładki Vinted.');
+
+    const rows = lines.map(l => parseCSVLine(l));
+    const header = rows[0];
+    console.log('Nagłówki:', header);
+
+    // Znajdź indeksy kolumn dynamicznie
+    const idx = {
+      product: header.findIndex(h => /produkt/i.test(h)),
+      price:   header.findIndex(h => /cena/i.test(h)),
+      status:  header.findIndex(h => /status/i.test(h)),
+      date:    header.findIndex(h => /data/i.test(h)),
+      buyer:   header.findIndex(h => /kupuj/i.test(h)),
+      platform:header.findIndex(h => /platforma/i.test(h)),
+    };
+    console.log('Indeksy kolumn:', idx);
+
+    appState.syncedData = rows.slice(1).map(r => ({
+      product:  idx.product  >= 0 ? (r[idx.product]  || '—') : '—',
+      price:    idx.price    >= 0 ? (r[idx.price]    || '0') : '0',
+      status:   idx.status   >= 0 ? (r[idx.status]   || '—') : '—',
+      date:     idx.date     >= 0 ? (r[idx.date]     || '—') : '—',
+      buyer:    idx.buyer    >= 0 ? (r[idx.buyer]    || '—') : '—',
+      platform: idx.platform >= 0 ? (r[idx.platform] || 'Vinted') : 'Vinted',
+    })).filter(r => r.price !== '0' || r.status !== '—');
+
+    if (!appState.syncedData.length) throw new Error('Nie znaleziono danych — sprawdź czy zakładka "Vinted" zawiera wiersze z danymi.');
+
     saveState();
     renderSyncTable(appState.syncedData);
     updateSyncStats(appState.syncedData);
     document.getElementById('lastSync').textContent = new Date().toLocaleString('pl-PL');
-    document.getElementById('st3').textContent = '✓ Połączono'; document.getElementById('st3').className = 'badge badge-green';
-    showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień!`, 'success');
+    document.getElementById('st3').textContent = '✓ Połączono';
+    document.getElementById('st3').className = 'badge badge-green';
+    showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień z Vinted!`, 'success');
   } catch(e) {
     showSyncStatus('❌ ' + e.message, 'error');
+    console.error('Błąd sync:', e);
   }
   document.getElementById('syncBtn').textContent = '🔄 Synchronizuj';
   document.getElementById('syncBtn').disabled = false;
