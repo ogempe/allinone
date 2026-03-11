@@ -748,11 +748,7 @@ select option { background:var(--bg3); }
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title" data-i18n="sources_title">Źródła sprzedaży</div></div>
-      <div class="empty-state" style="padding:24px 10px">
-        <div class="empty-icon">🔗</div>
-        <div class="empty-sub" style="font-size:12px">Połącz platformy aby zobaczyć podział</div>
-        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="showPage('sync',document.querySelector('.nav-item'))">Połącz Vinted</button>
-      </div>
+      <div id="sourcesDonut" style="padding:16px 10px"><div class="empty-state" style="padding:16px 10px"><div class="empty-icon">🔗</div><div class="empty-sub" style="font-size:12px">Połącz platformy aby zobaczyć podział</div><button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="showPage('sync',document.querySelector('.nav-item'))">Połącz Vinted</button></div></div>
     </div>
   </div>
 
@@ -762,16 +758,12 @@ select option { background:var(--bg3); }
         <div class="card-title">Top Produkty — Profit per Item</div>
         <span class="badge badge-purple">ten miesiąc</span>
       </div>
-      <div class="empty-state">
-        <div class="empty-icon">🏆</div>
-        <div class="empty-title">Brak sprzedaży</div>
-        <div class="empty-sub">Top produkty pojawią się gdy dodasz pierwsze sprzedaże</div>
-      </div>
+      <div id="topProductsList"><div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-title">Brak sprzedaży</div><div class="empty-sub">Top produkty pojawią się gdy dodasz pierwsze sprzedaże</div></div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:16px">
       <div class="forecast-box">
         <div class="forecast-label" data-i18n="forecast_label">🔮 Prognoza na ten miesiąc</div>
-        <div class="forecast-value">— zł</div>
+        <div class="forecast-value" id="forecastValue">— zł</div>
         <div class="forecast-sub">Dodaj sprzedaże aby zobaczyć prognozę</div>
       </div>
       <div class="card">
@@ -1646,6 +1638,24 @@ function addCost() {
   document.getElementById('cost_amount').value = '';
 }
 
+// ===== DANE POŁĄCZONE (ręczne + Vinted Sheets) =====
+function getAllSales() {
+  const manual = (appState.sales || []);
+  const synced = (appState.syncedData || []).map(r => ({
+    id:       'sync_' + r.date + '_' + r.product,
+    name:     r.product || '—',
+    platform: r.platform || 'Vinted',
+    price:    parseFloat(r.price) || 0,
+    cost:     0, ship: 0, comm: 0,
+    profit:   parseFloat(r.price) || 0,
+    status:   r.status || 'Sprzedane',
+    date:     r.date ? r.date.split(' ')[0] : '—',
+    buyer:    r.buyer || '—',
+    synced:   true,
+  }));
+  return [...manual, ...synced];
+}
+
 // ===== RENDER ALL =====
 function renderAll() {
   renderSales();
@@ -1655,23 +1665,25 @@ function renderAll() {
   updateDashboard();
   updateTaxPage();
   updateReports();
+  updateStats();
 }
 
 function renderSales() {
   const tbody = document.getElementById('salesTableBody');
-  if (!appState.sales.length) {
+  const all = getAllSales();
+  if (!all.length) {
     tbody.innerHTML = '<tr class="table-empty"><td colspan="9">Brak sprzedaży. Kliknij <strong>+ Dodaj sprzedaż</strong> lub zsynchronizuj Vinted.</td></tr>';
     return;
   }
-  tbody.innerHTML = appState.sales.map(s => `
+  tbody.innerHTML = all.map(s => `
     <tr>
       <td>${s.name}</td>
-      <td><span class="badge platform-${s.platform.toLowerCase()}">${s.platform}</span></td>
+      <td><span class="badge platform-${(s.platform||'vinted').toLowerCase()}">${s.platform||'Vinted'}</span></td>
       <td>${s.price} zł</td>
-      <td>${s.cost} zł</td>
-      <td>${s.comm} zł</td>
-      <td>${s.ship} zł</td>
-      <td style="color:${s.profit>=0?'#34d399':'#f87171'};font-weight:700">${s.profit>=0?'+':''}${s.profit} zł</td>
+      <td>${s.cost || 0} zł</td>
+      <td>${s.comm || 0} zł</td>
+      <td>${s.ship || 0} zł</td>
+      <td style="color:${(s.profit||0)>=0?'#34d399':'#f87171'};font-weight:700">${(s.profit||0)>=0?'+':''}${s.profit||0} zł</td>
       <td><span class="badge ${statusBadge(s.status)}">${s.status}</span></td>
       <td>${s.date}</td>
     </tr>
@@ -1762,33 +1774,144 @@ function renderCosts() {
 }
 
 function updateDashboard() {
+  const all   = getAllSales();
   const today = new Date().toLocaleDateString('pl-PL');
-  const todaySales  = appState.sales.filter(s=>s.date===today);
-  const todayRev    = todaySales.reduce((s,x)=>s+x.price,0);
-  const monthRev    = appState.sales.reduce((s,x)=>s+x.price,0);
-  const totalProfit = appState.sales.reduce((s,x)=>s+x.profit,0);
-  document.getElementById('d_today').textContent  = todayRev + ' zł';
-  document.getElementById('d_month').textContent  = monthRev + ' zł';
-  document.getElementById('d_profit').textContent = totalProfit + ' zł';
-  document.getElementById('d_orders').textContent = appState.sales.length;
-  document.getElementById('s_avg').textContent    = appState.sales.length ? Math.round(monthRev/appState.sales.length)+' zł' : '— zł';
-  document.getElementById('s_total').textContent  = appState.products.length;
+  const todayRev    = all.filter(s=>s.date===today).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+  const monthRev    = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+  const totalProfit = all.reduce((s,x)=>s+(parseFloat(x.profit)||0),0);
+  const costTotal   = (appState.costs||[]).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+
+  document.getElementById('d_today').textContent  = todayRev.toFixed(2) + ' zł';
+  document.getElementById('d_month').textContent  = monthRev.toFixed(2) + ' zł';
+  document.getElementById('d_profit').textContent = (monthRev - costTotal).toFixed(2) + ' zł';
+  document.getElementById('d_orders').textContent = all.length;
+
+  // Wykres — ostatnie 7 dni
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const label = d.toLocaleDateString('pl-PL');
+    const rev   = all.filter(s=>s.date===label).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+    days.push({ label, rev });
+  }
+  const maxRev = Math.max(...days.map(d=>d.rev), 1);
+  const chartWrap = document.getElementById('dashChartWrap');
+  if (days.some(d=>d.rev>0)) {
+    chartWrap.innerHTML = `
+      <div style="display:flex;align-items:flex-end;gap:6px;height:180px;padding:0 4px">
+        ${days.map((d,i)=>`
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="font-size:10px;color:var(--text3)">${d.rev>0?d.rev.toFixed(0)+' zł':''}</div>
+            <div style="flex:1;width:100%;border-radius:6px 6px 0 0;background:var(--grad);opacity:${i===6?1:0.6};min-height:4px" 
+                 style2="height:${Math.round(d.rev/maxRev*100)}%"
+                 data-height="${Math.round(d.rev/maxRev*140)}px"></div>
+            <div style="font-size:10px;color:var(--text3)">${d.label.split('.').slice(0,2).join('.')}</div>
+          </div>
+        `).join('')}
+      </div>`;
+    // Ustaw wysokości słupków
+    chartWrap.querySelectorAll('[data-height]').forEach(el => {
+      el.style.height = el.getAttribute('data-height');
+    });
+  } else {
+    chartWrap.innerHTML = '<div class="empty-state" style="padding:32px 20px"><div class="empty-icon">📊</div><div class="empty-title">Brak danych do wykresu</div><div class="empty-sub">Zsynchronizuj Vinted lub dodaj sprzedaże</div></div>';
+  }
+
+  // Źródła sprzedaży — donut
+  const platforms = {};
+  all.forEach(s => { platforms[s.platform] = (platforms[s.platform]||0) + (parseFloat(s.price)||0); });
+  const platEntries = Object.entries(platforms).sort((a,b)=>b[1]-a[1]);
+  const platColors = { Vinted:'#09b46b', Etsy:'#f06432', eBay:'#0064d2', Inne:'#7c3aed' };
+  if (platEntries.length > 0) {
+    let deg = 0;
+    const segments = platEntries.map(([name,val]) => {
+      const pct = val / monthRev;
+      const seg = `${platColors[name]||'#9d5cf6'} ${deg}deg ${deg + pct*360}deg`;
+      deg += pct*360;
+      return { name, val, pct, color: platColors[name]||'#9d5cf6', seg };
+    });
+    const donutEl = document.getElementById('sourcesDonut');
+    if (donutEl) {
+      donutEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <div style="width:100px;height:100px;border-radius:50%;background:conic-gradient(${segments.map(s=>s.seg).join(',')});display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <div style="width:60px;height:60px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--text)">${all.length}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${segments.map(s=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px">
+              <div style="width:10px;height:10px;border-radius:50%;background:${s.color}"></div>
+              <span style="color:var(--text2)">${s.name}</span>
+              <strong style="color:var(--text)">${s.val.toFixed(0)} zł (${Math.round(s.pct*100)}%)</strong>
+            </div>`).join('')}
+          </div>
+        </div>`;
+    }
+  }
+
+  // Top produkty
+  const productMap = {};
+  all.forEach(s => {
+    if (!productMap[s.name]) productMap[s.name] = { name:s.name, revenue:0, count:0, platform:s.platform };
+    productMap[s.name].revenue += parseFloat(s.price)||0;
+    productMap[s.name].count++;
+  });
+  const topProds = Object.values(productMap).sort((a,b)=>b.revenue-a.revenue).slice(0,5);
+  const topEl = document.getElementById('topProductsList');
+  if (topEl) {
+    if (topProds.length) {
+      topEl.innerHTML = topProds.map((p,i)=>`
+        <div class="profit-item">
+          <div class="profit-item-rank">${i+1}</div>
+          <div class="profit-item-info">
+            <div class="profit-item-name">${p.name}</div>
+            <div class="profit-item-meta">${p.count}x sprzedane · ${p.platform}</div>
+          </div>
+          <div>
+            <div class="profit-amount">${p.revenue.toFixed(0)} zł</div>
+          </div>
+        </div>`).join('');
+    } else {
+      topEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-sub">Brak danych</div></div>';
+    }
+  }
+
+  // Prognoza
+  const forecastEl = document.getElementById('forecastValue');
+  if (forecastEl) {
+    const dayOfMonth = new Date().getDate();
+    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+    const forecast = dayOfMonth > 0 ? Math.round(monthRev / dayOfMonth * daysInMonth) : 0;
+    forecastEl.textContent = forecast + ' zł';
+  }
 }
 
 function updateTaxPage() {
-  const income = appState.sales.reduce((s,x)=>s+x.price,0);
-  const costs  = appState.costs.reduce((s,c)=>s+c.amount,0);
-  document.getElementById('tax_month').textContent = income + ' zł';
-  document.getElementById('tax_year').textContent  = income + ' zł';
-  document.getElementById('taxIncome').value       = income;
-  document.getElementById('taxCosts').value        = costs;
+  const all    = getAllSales();
+  const income = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+  const costs  = (appState.costs||[]).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+
+  // Podział miesięczny
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear  = now.getFullYear();
+  const monthIncome = all.filter(s => {
+    const parts = s.date.split('.');
+    if (parts.length < 3) return false;
+    const d = new Date(parts[2], parts[1]-1, parts[0]);
+    return d.getMonth()===thisMonth && d.getFullYear()===thisYear;
+  }).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+
+  document.getElementById('tax_month').textContent = monthIncome.toFixed(2) + ' zł';
+  document.getElementById('tax_year').textContent  = income.toFixed(2) + ' zł';
+  document.getElementById('taxIncome').value       = income.toFixed(2);
+  document.getElementById('taxCosts').value        = costs.toFixed(2);
   calcTax();
-  // Limit bar
+
   const limit = appState.taxLimit || 3499;
-  const pct   = Math.min(Math.round(income/limit*100), 100);
-  document.getElementById('limitBar').style.width    = pct + '%';
-  document.getElementById('limitCurrent').textContent= income + ' zł';
-  document.getElementById('limitLeft').textContent   = Math.max(0, limit - income) + ' zł';
+  const pct   = Math.min(Math.round(monthIncome/limit*100), 100);
+  document.getElementById('limitBar').style.width     = pct + '%';
+  document.getElementById('limitCurrent').textContent = monthIncome.toFixed(2) + ' zł';
+  document.getElementById('limitLeft').textContent    = Math.max(0, limit - monthIncome).toFixed(2) + ' zł';
   const badge = document.getElementById('limitBadge');
   const alert = document.getElementById('limitAlert');
   if (pct >= 100) {
@@ -1796,7 +1919,7 @@ function updateTaxPage() {
     alert.className = 'alert-box alert-red'; alert.textContent = '🔴 Przekroczono limit działalności nierejestrowanej! Skonsultuj się z księgowym.';
   } else if (pct >= 80) {
     badge.className = 'badge badge-yellow'; badge.textContent = '🟡 Blisko limitu';
-    alert.className = 'alert-box alert-yellow'; alert.textContent = `🟡 Blisko limitu! Zostało Ci tylko ${limit-income} zł. Rozważ rejestrację działalności.`;
+    alert.className = 'alert-box alert-yellow'; alert.textContent = `🟡 Blisko limitu! Zostało Ci tylko ${(limit-monthIncome).toFixed(2)} zł. Rozważ rejestrację działalności.`;
   } else {
     badge.className = 'badge badge-green'; badge.textContent = '🟢 OK';
     alert.className = 'alert-box alert-green'; alert.textContent = `🟢 Bezpiecznie — jesteś poniżej limitu działalności nierejestrowanej.`;
@@ -1804,12 +1927,22 @@ function updateTaxPage() {
 }
 
 function updateReports() {
-  const income = appState.sales.reduce((s,x)=>s+x.price,0);
-  const costs  = appState.costs.reduce((s,c)=>s+c.amount,0);
-  document.getElementById('rpt_income').textContent = income + ' zł';
-  document.getElementById('rpt_costs').textContent  = costs + ' zł';
-  document.getElementById('rpt_profit').textContent = (income-costs) + ' zł';
-  document.getElementById('rpt_sales').textContent  = appState.sales.length;
+  const all    = getAllSales();
+  const income = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+  const costs  = (appState.costs||[]).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+  document.getElementById('rpt_income').textContent = income.toFixed(2) + ' zł';
+  document.getElementById('rpt_costs').textContent  = costs.toFixed(2) + ' zł';
+  document.getElementById('rpt_profit').textContent = (income-costs).toFixed(2) + ' zł';
+  document.getElementById('rpt_sales').textContent  = all.length;
+}
+
+function updateStats() {
+  const all = getAllSales();
+  const income = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+  const avgEl = document.getElementById('s_avg');
+  const totalEl = document.getElementById('s_total');
+  if (avgEl) avgEl.textContent = all.length ? (income/all.length).toFixed(0)+' zł' : '— zł';
+  if (totalEl) totalEl.textContent = appState.products.length + all.length;
 }
 
 // ===== TAX CALC =====
@@ -1969,6 +2102,8 @@ async function syncFromSheets() {
     document.getElementById('st3').textContent = '✓ Połączono';
     document.getElementById('st3').className = 'badge badge-green';
     showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień z Vinted!`, 'success');
+    // Odśwież wszystkie zakładki z nowymi danymi
+    renderAll();
   } catch(e) {
     showSyncStatus('❌ ' + e.message, 'error');
     console.error('Błąd sync:', e);
@@ -2081,3 +2216,4 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
