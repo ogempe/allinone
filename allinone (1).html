@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AllInOne — Centrum Sprzedaży</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===== VARIABLES ===== */
+:root {
+  --purple: #7c3aed;
+  --purple-light: #9d5cf6;
+  --purple-dark: #5b21b6;
+  --bordeaux: #881337;
+  --bordeaux-light: #be185d;
+  --accent: #c026d3;
+  --grad: linear-gradient(135deg, #7c3aed 0%, #881337 100%);
+  --grad2: linear-gradient(135deg, #5b21b6 0%, #c026d3 50%, #be185d 100%);
+}
+[data-theme="dark"] {
+  --bg: #0a0a0f; --bg2: #111118; --bg3: #18181f; --bg4: #1f1f2e;
+  --border: rgba(124,58,237,0.18); --border2: rgba(255,255,255,0.07);
+  --text: #f1f0f7; --text2: #a09abf; --text3: #6b6490;
+  --card: #13131c; --sidebar: #0e0e16;
+  --hover: rgba(124,58,237,0.12); --glass: rgba(124,58,237,0.08);
+  --shadow: 0 8px 32px rgba(0,0,0,0.6); --shadow2: 0 2px 12px rgba(0,0,0,0.4);
+}
+[data-theme="light"] {
+  --bg: #f5f3ff; --bg2: #ede9fe; --bg3: #fff; --bg4: #f9f7ff;
+  --border: rgba(124,58,237,0.2); --border2: rgba(0,0,0,0.07);
+  --text: #1a1533; --text2: #5b4d7a; --text3: #9b8ec0;
+  --card: #ffffff; --sidebar: #fff;
+  --hover: rgba(124,58,237,0.08); --glass: rgba(124,58,237,0.06);
+  --shadow: 0 4px 24px rgba(124,58,237,0.12); --shadow2: 0 2px 8px rgba(124,58,237,0.08);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg); color:var(--text);
+  min-height:100vh; overflow-x:hidden;
+  transition:background 0.3s, color 0.3s;
+}
+
+/* ===== AUTH SCREENS ===== */
+.auth-screen {
+  display:none; position:fixed; inset:0; z-index:1000;
+  background:var(--bg);
+  align-items:center; justify-content:center;
+}
+.auth-screen.active { display:flex; }
+
+.auth-bg {
+  position:absolute; inset:0; overflow:hidden;
+  pointer-events:none;
+}
+.auth-orb {
+  position:absolute; border-radius:50%;
+  filter:blur(80px); opacity:0.25;
+}
+.auth-orb-1 { width:500px; height:500px; background:#7c3aed; top:-100px; right:-100px; }
+.auth-orb-2 { width:400px; height:400px; background:#881337; bottom:-80px; left:-80px; }
+.auth-orb-3 { width:300px; height:300px; background:#c026d3; top:40%; left:40%; }
+
+.auth-card {
+  position:relative; z-index:1;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:40px;
+  width:100%; max-width:420px;
+  box-shadow:var(--shadow);
+  animation:authIn 0.4s ease;
+}
+@keyframes authIn {
+  from { opacity:0; transform:translateY(20px) scale(0.97); }
+  to   { opacity:1; transform:none; }
+}
+
+.auth-logo {
+  text-align:center; margin-bottom:32px;
+}
+.auth-logo-text {
+  font-family:'Syne',sans-serif; font-size:32px; font-weight:800;
+  background:var(--grad2);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.auth-logo-sub { font-size:13px; color:var(--text3); margin-top:4px; }
+
+.auth-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+.auth-sub { font-size:14px; color:var(--text2); margin-bottom:28px; }
+
+.form-group { margin-bottom:16px; }
+.form-label {
+  display:block; font-size:11px; font-weight:700;
+  color:var(--text2); text-transform:uppercase;
+  letter-spacing:0.6px; margin-bottom:6px;
+}
+.form-input {
+  width:100%; padding:12px 14px;
+  background:var(--bg4); border:1px solid var(--border2);
+  border-radius:10px; color:var(--text);
+  font-size:14px; font-family:'DM Sans',sans-serif;
+  transition:all 0.2s; outline:none;
+}
+.form-input:focus {
+  border-color:var(--purple);
+  box-shadow:0 0 0 3px rgba(124,58,237,0.12);
+}
+.form-input::placeholder { color:var(--text3); }
+.form-input.error { border-color:#f87171; box-shadow:0 0 0 3px rgba(248,113,113,0.1); }
+
+.auth-error {
+  background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.2);
+  color:#f87171; border-radius:8px; padding:10px 14px;
+  font-size:13px; margin-bottom:16px; display:none;
+}
+
+.btn-auth {
+  width:100%; padding:13px;
+  background:var(--grad); color:#fff;
+  border:none; border-radius:10px;
+  font-size:15px; font-weight:700;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer; transition:all 0.2s;
+  box-shadow:0 4px 16px rgba(124,58,237,0.35);
+  margin-top:4px;
+}
+.btn-auth:hover { transform:translateY(-1px); box-shadow:0 6px 24px rgba(124,58,237,0.5); }
+.btn-auth:active { transform:none; }
+.btn-auth:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+.auth-divider {
+  display:flex; align-items:center; gap:12px;
+  margin:20px 0; color:var(--text3); font-size:12px;
+}
+.auth-divider::before, .auth-divider::after {
+  content:''; flex:1; height:1px; background:var(--border2);
+}
+
+.auth-switch {
+  text-align:center; margin-top:20px;
+  font-size:13px; color:var(--text2);
+}
+.auth-switch a {
+  color:var(--purple-light); font-weight:600;
+  cursor:pointer; text-decoration:none;
+}
+.auth-switch a:hover { text-decoration:underline; }
+
+.auth-features {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:20px;
+}
+.auth-feature {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px; color:var(--text2);
+  background:var(--bg4); border-radius:8px; padding:8px 10px;
+  border:1px solid var(--border2);
+}
+
+.input-wrap { position:relative; }
+.input-eye {
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  cursor:pointer; color:var(--text3); font-size:16px;
+  user-select:none;
+}
+
+/* ===== APP (po zalogowaniu) ===== */
+#app { display:none; }
+#app.active { display:block; }
+
+/* SIDEBAR */
+.sidebar {
+  position:fixed; left:0; top:0; bottom:0; width:240px;
+  background:var(--sidebar); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; z-index:100;
+}
+.logo { padding:28px 24px 20px; border-bottom:1px solid var(--border); }
+.logo-text {
+  font-family:'Syne',sans-serif; font-size:22px; font-weight:800;
+  background:var(--grad2); -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent; background-clip:text;
+}
+.logo-sub { font-size:11px; color:var(--text3); margin-top:2px; letter-spacing:0.5px; text-transform:uppercase; }
+
+.nav { flex:1; padding:16px 12px; overflow-y:auto; }
+.nav-section { margin-bottom:20px; }
+.nav-label {
+  font-size:10px; font-weight:600; letter-spacing:1.2px;
+  text-transform:uppercase; color:var(--text3);
+  padding:0 12px; margin-bottom:6px;
+}
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px;
+  cursor:pointer; transition:all 0.2s;
+  color:var(--text2); font-size:14px; font-weight:500;
+  margin-bottom:2px;
+}
+.nav-item:hover { background:var(--hover); color:var(--text); }
+.nav-item.active { background:var(--grad); color:#fff; box-shadow:0 4px 16px rgba(124,58,237,0.35); }
+.nav-icon { font-size:17px; width:20px; text-align:center; }
+.nav-badge {
+  margin-left:auto; background:var(--bordeaux);
+  color:#fff; font-size:10px; font-weight:700;
+  padding:2px 7px; border-radius:99px;
+}
+.sidebar-bottom { padding:16px 12px; border-top:1px solid var(--border); }
+
+/* TOPBAR */
+.topbar {
+  position:fixed; top:0; left:240px; right:0; height:64px;
+  background:var(--sidebar); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 28px; gap:16px; z-index:99;
+}
+.topbar-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; flex:1; }
+.topbar-title span { color:var(--text3); font-weight:400; font-size:14px; margin-left:8px; }
+.topbar-actions { display:flex; align-items:center; gap:10px; }
+
+.btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; border-radius:8px;
+  font-size:13px; font-weight:600; cursor:pointer;
+  border:none; transition:all 0.2s; font-family:'DM Sans',sans-serif;
+}
+.btn-primary { background:var(--grad); color:#fff; box-shadow:0 4px 12px rgba(124,58,237,0.3); }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(124,58,237,0.45); }
+.btn-ghost { background:var(--glass); color:var(--text2); border:1px solid var(--border); }
+.btn-ghost:hover { background:var(--hover); color:var(--text); }
+
+.icon-btn {
+  width:36px; height:36px; border-radius:8px;
+  background:var(--bg4); border:1px solid var(--border);
+  color:var(--text2); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; transition:all 0.2s;
+}
+.icon-btn:hover { border-color:var(--purple); color:var(--purple); }
+
+.notif-wrap { position:relative; }
+.notif-dot {
+  position:absolute; top:7px; right:7px;
+  width:7px; height:7px; border-radius:50%;
+  background:var(--bordeaux); border:2px solid var(--sidebar);
+}
+.avatar {
+  width:36px; height:36px; border-radius:8px;
+  background:var(--grad); display:flex; align-items:center;
+  justify-content:center; font-weight:700; font-size:14px;
+  color:#fff; cursor:pointer;
+}
+.lang-btn {
+  display:flex; align-items:center; gap:6px;
+  padding:7px 12px; border-radius:8px;
+  background:var(--bg4); border:1px solid var(--border);
+  color:var(--text2); font-size:13px; font-weight:500;
+  cursor:pointer; transition:all 0.2s;
+}
+.lang-btn:hover { border-color:var(--purple); color:var(--text); }
+
+/* MAIN */
+.main { margin-left:240px; padding-top:64px; min-height:100vh; }
+.page { display:none; padding:28px; }
+.page.active { display:block; animation:fadeIn 0.3s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+/* CARD */
+.card {
+  background:var(--card); border:1px solid var(--border2);
+  border-radius:14px; padding:20px;
+  transition:all 0.2s; box-shadow:var(--shadow2);
+}
+.card:hover { border-color:var(--border); }
+.card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.card-title { font-size:12px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:0.6px; }
+
+/* STAT CARDS */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.stat-card {
+  background:var(--card); border:1px solid var(--border2);
+  border-radius:14px; padding:20px 22px;
+  position:relative; overflow:hidden;
+  transition:all 0.25s; box-shadow:var(--shadow2);
+}
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.stat-card.purple::before { background:var(--grad); }
+.stat-card.bordeaux::before { background:linear-gradient(90deg,var(--bordeaux),var(--accent)); }
+.stat-card.green::before { background:linear-gradient(90deg,#059669,#34d399); }
+.stat-card.orange::before { background:linear-gradient(90deg,#d97706,#f59e0b); }
+.stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); border-color:var(--border); }
+.stat-label { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:8px; }
+.stat-value { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; color:var(--text); line-height:1; margin-bottom:6px; }
+.stat-change { font-size:12px; font-weight:500; }
+.stat-change.up { color:#34d399; } .stat-change.down { color:#f87171; }
+.stat-icon { position:absolute; right:20px; top:20px; font-size:28px; opacity:0.12; }
+
+/* GRID */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:24px; }
+.grid-3-1 { display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:24px; }
+
+/* EMPTY STATE */
+.empty-state {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:48px 20px; text-align:center;
+}
+.empty-icon { font-size:48px; margin-bottom:16px; opacity:0.5; }
+.empty-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--text); margin-bottom:8px; }
+.empty-sub { font-size:14px; color:var(--text3); max-width:320px; line-height:1.6; margin-bottom:20px; }
+
+/* TABLE */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+thead th {
+  padding:10px 14px; font-size:11px; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.7px; color:var(--text3);
+  border-bottom:1px solid var(--border2); text-align:left;
+}
+tbody tr { border-bottom:1px solid var(--border2); transition:background 0.15s; }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover { background:var(--hover); }
+tbody td { padding:12px 14px; font-size:13px; color:var(--text2); }
+tbody td:first-child { color:var(--text); font-weight:500; }
+.table-empty td { text-align:center; color:var(--text3); padding:40px !important; }
+
+/* BADGES */
+.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600; }
+.badge-green { background:rgba(52,211,153,0.12); color:#34d399; }
+.badge-yellow { background:rgba(251,191,36,0.12); color:#fbbf24; }
+.badge-red { background:rgba(248,113,113,0.12); color:#f87171; }
+.badge-purple { background:rgba(124,58,237,0.12); color:var(--purple-light); }
+.badge-blue { background:rgba(59,130,246,0.12); color:#60a5fa; }
+.platform-vinted { background:rgba(9,180,107,0.12); color:#09b46b; }
+.platform-etsy { background:rgba(240,100,50,0.12); color:#f06432; }
+.platform-ebay { background:rgba(0,100,210,0.12); color:#0064d2; }
+
+/* BARS */
+.bar-wrap { background:var(--bg4); border-radius:99px; height:10px; overflow:hidden; border:1px solid var(--border2); }
+.bar { height:100%; border-radius:99px; background:var(--grad); transition:width 0.5s ease; }
+
+/* INPUTS */
+label, .form-label-sm {
+  display:block; font-size:11px; font-weight:700;
+  color:var(--text2); text-transform:uppercase;
+  letter-spacing:0.6px; margin-bottom:6px;
+}
+input, select, textarea {
+  width:100%; padding:10px 14px;
+  background:var(--bg4); border:1px solid var(--border2);
+  border-radius:8px; color:var(--text);
+  font-size:14px; font-family:'DM Sans',sans-serif;
+  transition:all 0.2s; outline:none;
+}
+input:focus, select:focus, textarea:focus { border-color:var(--purple); box-shadow:0 0 0 3px rgba(124,58,237,0.12); }
+input::placeholder { color:var(--text3); }
+select option { background:var(--bg3); }
+
+/* CALC RESULT */
+.calc-result { background:var(--grad); border-radius:12px; padding:20px; color:#fff; margin-top:16px; }
+.calc-result-label { font-size:12px; opacity:0.7; }
+.calc-result-value { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; margin-top:4px; }
+
+/* TAX BAR */
+.tax-bar-wrap { background:var(--bg4); border-radius:99px; height:12px; overflow:hidden; margin:10px 0; border:1px solid var(--border2); }
+.tax-bar { height:100%; border-radius:99px; background:var(--grad); transition:width 0.5s ease; position:relative; }
+.tax-bar::after { content:''; position:absolute; right:0; top:0; bottom:0; width:20px; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3)); border-radius:0 99px 99px 0; }
+
+.alert-box { padding:12px 16px; border-radius:10px; font-size:13px; font-weight:500; margin-bottom:12px; }
+.alert-green { background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.2); color:#34d399; }
+.alert-yellow { background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2); color:#fbbf24; }
+.alert-red { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.2); color:#f87171; }
+
+/* DROPDOWN */
+.dropdown { position:relative; display:inline-block; }
+.dropdown-menu {
+  display:none; position:absolute; right:0; top:calc(100% + 6px);
+  background:var(--card); border:1px solid var(--border);
+  border-radius:10px; min-width:160px;
+  box-shadow:var(--shadow); z-index:999; overflow:hidden;
+}
+.dropdown-menu.open { display:block; }
+.dropdown-item { padding:10px 16px; font-size:13px; color:var(--text2); cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:8px; }
+.dropdown-item:hover { background:var(--hover); color:var(--text); }
+.dropdown-item.active { color:var(--purple-light); font-weight:600; }
+
+/* TOGGLE */
+.toggle { width:40px; height:22px; border-radius:99px; background:var(--bg3); border:1px solid var(--border2); cursor:pointer; position:relative; transition:all 0.3s; flex-shrink:0; }
+.toggle.on { background:var(--grad); border-color:transparent; }
+.toggle::after { content:''; position:absolute; width:16px; height:16px; border-radius:50%; background:#fff; top:2px; left:2px; transition:left 0.3s; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+.toggle.on::after { left:20px; }
+
+/* TAGS */
+.tags-wrap { display:flex; flex-wrap:wrap; gap:8px; }
+.tag { padding:6px 14px; border-radius:99px; background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.2); color:var(--purple-light); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.tag:hover, .tag.active { background:var(--grad); color:#fff; border-color:transparent; }
+
+/* FOLDER */
+.folder { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; cursor:pointer; transition:all 0.15s; font-size:13px; color:var(--text2); }
+.folder:hover { background:var(--hover); color:var(--text); }
+.folder-children { padding-left:20px; }
+
+/* AUTOMATION */
+.auto-card { padding:16px 18px; border-radius:12px; background:var(--bg4); border:1px solid var(--border2); margin-bottom:12px; display:flex; align-items:center; gap:16px; transition:all 0.2s; }
+.auto-card:hover { border-color:var(--purple); }
+.auto-icon { width:40px; height:40px; border-radius:10px; background:var(--grad); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.auto-info { flex:1; }
+.auto-title { font-size:14px; font-weight:600; color:var(--text); }
+.auto-desc { font-size:12px; color:var(--text3); margin-top:2px; }
+
+/* INTEGRATION CARD */
+.integration-card { padding:20px; border-radius:12px; background:var(--bg4); border:1px solid var(--border2); text-align:center; transition:all 0.2s; cursor:pointer; }
+.integration-card:hover { border-color:var(--purple); transform:translateY(-2px); }
+.integration-card.connected { border-color:rgba(52,211,153,0.3); }
+.integration-logo { font-size:32px; margin-bottom:10px; }
+.integration-name { font-size:14px; font-weight:700; margin-bottom:4px; }
+.integration-status { font-size:11px; }
+
+/* PLANNER */
+.planner-day { padding:14px 16px; border-radius:10px; background:var(--bg4); border:1px solid var(--border2); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:all 0.2s; }
+.planner-day:hover { border-color:var(--purple); }
+.planner-day-name { font-weight:600; font-size:14px; }
+.planner-count { background:var(--grad); color:#fff; font-size:12px; font-weight:700; padding:3px 12px; border-radius:99px; }
+.planner-count.empty { background:var(--bg3); color:var(--text3); border:1px solid var(--border2); }
+
+/* SCANNER */
+.scanner-result { padding:16px; border-radius:10px; background:var(--bg4); border:1px solid var(--border); margin-top:16px; }
+.scanner-stat { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border2); }
+.scanner-stat:last-child { border-bottom:none; }
+.scanner-stat-label { font-size:13px; color:var(--text2); }
+.scanner-stat-value { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--text); }
+
+/* COST ITEM */
+.cost-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; background:var(--bg4); border:1px solid var(--border2); margin-bottom:8px; }
+.cost-cat-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; background:rgba(124,58,237,0.15); color:var(--purple-light); white-space:nowrap; }
+.cost-name { flex:1; font-size:13px; color:var(--text); font-weight:500; }
+.cost-date { font-size:11px; color:var(--text3); white-space:nowrap; }
+.cost-amount { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:#f87171; white-space:nowrap; }
+
+/* INV CARD */
+.inv-card { padding:14px; border-radius:10px; background:var(--bg4); border:1px solid var(--border2); transition:all 0.2s; cursor:pointer; }
+.inv-card:hover { border-color:var(--purple); transform:translateY(-2px); }
+.inv-img { width:100%; aspect-ratio:1; border-radius:8px; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-size:36px; margin-bottom:10px; }
+.inv-name { font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px; }
+.inv-price { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--purple-light); }
+
+/* PROFIT ITEM */
+.profit-item { display:flex; align-items:center; gap:14px; padding:14px; border-radius:10px; background:var(--bg4); border:1px solid var(--border2); margin-bottom:10px; transition:all 0.2s; cursor:pointer; }
+.profit-item:hover { border-color:var(--purple); }
+.profit-item-rank { width:28px; height:28px; border-radius:8px; background:var(--grad); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
+.profit-item-info { flex:1; }
+.profit-item-name { font-size:14px; font-weight:600; color:var(--text); }
+.profit-item-meta { font-size:12px; color:var(--text3); margin-top:2px; }
+.profit-amount { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:#34d399; }
+.profit-margin { font-size:11px; color:var(--text3); }
+
+/* FORECAST */
+.forecast-box { background:var(--grad2); border-radius:14px; padding:24px; color:#fff; text-align:center; }
+.forecast-label { font-size:13px; opacity:0.75; }
+.forecast-value { font-family:'Syne',sans-serif; font-size:48px; font-weight:800; margin:8px 0; }
+.forecast-sub { font-size:13px; opacity:0.7; }
+
+/* DONUT */
+.donut { width:120px; height:120px; border-radius:50%; background:conic-gradient(var(--purple) 0deg 126deg, var(--bordeaux) 126deg 198deg, #059669 198deg 270deg, var(--text3) 270deg 360deg); display:flex; align-items:center; justify-content:center; }
+.donut-inner { width:72px; height:72px; border-radius:50%; background:var(--card); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:14px; font-weight:800; color:var(--text); }
+.legend-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; }
+
+/* CHART */
+.chart-area { height:180px; position:relative; display:flex; align-items:flex-end; gap:6px; padding:0 4px; }
+.chart-bar { flex:1; border-radius:6px 6px 0 0; background:var(--grad); opacity:0.7; transition:opacity 0.2s; cursor:pointer; }
+.chart-bar:hover { opacity:1; }
+.chart-bar.today { opacity:1; }
+.chart-bar.bordeaux-bar { background:linear-gradient(180deg,var(--bordeaux-light),var(--bordeaux)); }
+
+/* SEARCH */
+.search-wrap { position:relative; flex:1; max-width:320px; }
+.search-wrap input { padding-left:38px; }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:14px; }
+
+/* BREADCRUMB */
+.breadcrumb { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text3); margin-bottom:24px; }
+.breadcrumb span { color:var(--purple-light); font-weight:600; }
+
+/* REPORT */
+.report-stat { text-align:center; padding:20px; }
+.report-stat-val { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--text); }
+.report-stat-lbl { font-size:12px; color:var(--text3); margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+
+/* SYNC */
+.step-num { width:28px; height:28px; border-radius:8px; background:var(--grad); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:14px; font-weight:800; color:#fff; flex-shrink:0; }
+
+/* LIVE DOT */
+.live-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#34d399; margin-right:6px; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+::-webkit-scrollbar-thumb:hover { background:var(--purple); }
+
+@media(max-width:1200px) { .stats-grid{grid-template-columns:repeat(2,1fr)} .grid-3{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+
+<!-- ==================== AUTH SCREENS ==================== -->
+
+<!-- LANDING / LOGIN -->
+<div class="auth-screen active" id="screenLogin">
+  <div class="auth-bg">
+    <div class="auth-orb auth-orb-1"></div>
+    <div class="auth-orb auth-orb-2"></div>
+    <div class="auth-orb auth-orb-3"></div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-text">AllInOne</div>
+      <div class="auth-logo-sub">Centrum Sprzedaży Online</div>
+    </div>
+    <div class="auth-title">Zaloguj się</div>
+    <div class="auth-sub">Witaj z powrotem! Wprowadź swoje dane.</div>
+    <div class="auth-error" id="loginError">Nieprawidłowy email lub hasło.</div>
+    <div class="form-group">
+      <label class="form-label">Adres e-mail</label>
+      <input class="form-input" type="email" id="loginEmail" placeholder="twoj@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hasło</label>
+      <div class="input-wrap">
+        <input class="form-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+        <span class="input-eye" onclick="togglePass('loginPass',this)">👁</span>
+      </div>
+    </div>
+    <button class="btn-auth" onclick="doLogin()" id="loginBtn">Zaloguj się →</button>
+    <div class="auth-divider">lub</div>
+    <div class="auth-switch">Nie masz konta? <a onclick="showScreen('screenRegister')">Zarejestruj się za darmo</a></div>
+    <div class="auth-features">
+      <div class="auth-feature">📊 Statystyki sprzedaży</div>
+      <div class="auth-feature">🧾 Kalkulator podatku</div>
+      <div class="auth-feature">⚡ Automatyzacje</div>
+      <div class="auth-feature">🟢 Sync Vinted/Etsy</div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="auth-screen" id="screenRegister">
+  <div class="auth-bg">
+    <div class="auth-orb auth-orb-1"></div>
+    <div class="auth-orb auth-orb-2"></div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-text">AllInOne</div>
+      <div class="auth-logo-sub">Centrum Sprzedaży Online</div>
+    </div>
+    <div class="auth-title">Utwórz konto</div>
+    <div class="auth-sub">Darmowe konto. Brak karty kredytowej.</div>
+    <div class="auth-error" id="registerError"></div>
+    <div class="grid-2" style="gap:12px;margin-bottom:0">
+      <div class="form-group">
+        <label class="form-label">Imię</label>
+        <input class="form-input" type="text" id="regFirst" placeholder="Anna">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nazwisko</label>
+        <input class="form-input" type="text" id="regLast" placeholder="Kowalska">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Adres e-mail</label>
+      <input class="form-input" type="email" id="regEmail" placeholder="twoj@email.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hasło</label>
+      <div class="input-wrap">
+        <input class="form-input" type="password" id="regPass" placeholder="Min. 8 znaków">
+        <span class="input-eye" onclick="togglePass('regPass',this)">👁</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Powtórz hasło</label>
+      <input class="form-input" type="password" id="regPass2" placeholder="Powtórz hasło">
+    </div>
+    <button class="btn-auth" onclick="doRegister()" id="registerBtn">Utwórz konto →</button>
+    <div class="auth-switch">Masz już konto? <a onclick="showScreen('screenLogin')">Zaloguj się</a></div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-text">AllInOne</div>
+    <div class="logo-sub">Centrum Sprzedaży</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-label" data-i18n="nav_main">Główne</div>
+      <div class="nav-item active" onclick="showPage('dashboard',this)">
+        <span class="nav-icon">🏠</span><span data-i18n="nav_dashboard">Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showPage('sales',this)">
+        <span class="nav-icon">💸</span><span data-i18n="nav_sales">Sprzedaż</span>
+      </div>
+      <div class="nav-item" onclick="showPage('products',this)">
+        <span class="nav-icon">📦</span><span data-i18n="nav_products">Produkty</span>
+      </div>
+      <div class="nav-item" onclick="showPage('inventory',this)">
+        <span class="nav-icon">🗄️</span><span data-i18n="nav_inventory">Magazyn</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label" data-i18n="nav_finance">Finanse</div>
+      <div class="nav-item" onclick="showPage('tax',this)">
+        <span class="nav-icon">🧾</span><span data-i18n="nav_tax">Podatki</span>
+      </div>
+      <div class="nav-item" onclick="showPage('costs',this)">
+        <span class="nav-icon">💳</span><span data-i18n="nav_costs">Koszty</span>
+      </div>
+      <div class="nav-item" onclick="showPage('calculator',this)">
+        <span class="nav-icon">🧮</span><span data-i18n="nav_calc">Kalkulator ceny</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label" data-i18n="nav_tools">Narzędzia</div>
+      <div class="nav-item" onclick="showPage('stats',this)">
+        <span class="nav-icon">📊</span><span data-i18n="nav_stats">Statystyki</span>
+      </div>
+      <div class="nav-item" onclick="showPage('automations',this)">
+        <span class="nav-icon">⚡</span><span data-i18n="nav_auto">Automatyzacje</span>
+      </div>
+      <div class="nav-item" onclick="showPage('scanner',this)">
+        <span class="nav-icon">🔍</span><span data-i18n="nav_scanner">Skaner rynku</span>
+      </div>
+      <div class="nav-item" onclick="showPage('planner',this)">
+        <span class="nav-icon">📅</span><span data-i18n="nav_planner">Planer</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label" data-i18n="nav_other">Inne</div>
+      <div class="nav-item" onclick="showPage('sync',this)">
+        <span class="nav-icon">🟢</span><span>Sync Vinted</span>
+        <span class="nav-badge" style="background:linear-gradient(135deg,#059669,#34d399)">NEW</span>
+      </div>
+      <div class="nav-item" onclick="showPage('integrations',this)">
+        <span class="nav-icon">🔗</span><span data-i18n="nav_int">Integracje</span>
+      </div>
+      <div class="nav-item" onclick="showPage('reports',this)">
+        <span class="nav-icon">📑</span><span data-i18n="nav_reports">Raporty</span>
+      </div>
+      <div class="nav-item" onclick="showPage('settings',this)">
+        <span class="nav-icon">⚙️</span><span data-i18n="nav_settings">Ustawienia</span>
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="nav-item" style="background:var(--glass);border:1px solid var(--border);cursor:default">
+      <span class="nav-icon">👤</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)" id="sidebarName">—</div>
+        <div style="font-size:11px;color:var(--text3)">Free Plan</div>
+      </div>
+      <span style="margin-left:auto;font-size:16px;cursor:pointer;color:var(--text3)" onclick="doLogout()" title="Wyloguj">🚪</span>
+    </div>
+  </div>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-title" id="topbarTitle">Dashboard</div>
+  <div class="topbar-actions">
+    <div class="search-wrap">
+      <span class="search-icon">🔎</span>
+      <input type="text" placeholder="Szukaj..." data-i18n-placeholder="search_placeholder">
+    </div>
+    <div class="dropdown">
+      <div class="lang-btn" onclick="toggleDropdown('langMenu')">🌐 <span id="langLabel">PL</span> ▾</div>
+      <div class="dropdown-menu" id="langMenu">
+        <div class="dropdown-item active" onclick="setLang('pl')">🇵🇱 Polski</div>
+        <div class="dropdown-item" onclick="setLang('en')">🇬🇧 English</div>
+        <div class="dropdown-item" onclick="setLang('de')">🇩🇪 Deutsch</div>
+        <div class="dropdown-item" onclick="setLang('uk')">🇺🇦 Українська</div>
+      </div>
+    </div>
+    <div class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Zmień motyw">🌙</div>
+    <div class="notif-wrap">
+      <div class="icon-btn">🔔</div>
+      <div class="notif-dot" id="notifDot" style="display:none"></div>
+    </div>
+    <div class="avatar" id="topbarAvatar">?</div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ===== DASHBOARD ===== -->
+<section class="page active" id="page-dashboard">
+  <div class="breadcrumb"><span data-i18n="nav_dashboard">Dashboard</span></div>
+  <div class="stats-grid">
+    <div class="stat-card purple">
+      <div class="stat-icon">💰</div>
+      <div class="stat-label" data-i18n="stat_today">Przychód dziś</div>
+      <div class="stat-value" id="d_today">0 zł</div>
+      <div class="stat-change" style="color:var(--text3)" id="d_today_sub">Brak danych</div>
+    </div>
+    <div class="stat-card bordeaux">
+      <div class="stat-icon">📈</div>
+      <div class="stat-label" data-i18n="stat_month">Przychód w miesiącu</div>
+      <div class="stat-value" id="d_month">0 zł</div>
+      <div class="stat-change" style="color:var(--text3)" id="d_month_sub">Brak danych</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon">✨</div>
+      <div class="stat-label" data-i18n="stat_profit">Realny zysk</div>
+      <div class="stat-value" id="d_profit">0 zł</div>
+      <div class="stat-change" style="color:var(--text3)">Dodaj koszty aby wyliczyć</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon">🛒</div>
+      <div class="stat-label" data-i18n="stat_orders">Zamówienia</div>
+      <div class="stat-value" id="d_orders">0</div>
+      <div class="stat-change" style="color:var(--text3)">Brak danych</div>
+    </div>
+  </div>
+
+  <div class="grid-3-1">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" data-i18n="chart_title">Sprzedaż — ostatnie 7 dni</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px">Dzień</button>
+          <button class="btn btn-primary" style="padding:5px 10px;font-size:11px">Tydzień</button>
+          <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px">Miesiąc</button>
+        </div>
+      </div>
+      <div id="dashChartWrap">
+        <div class="empty-state" style="padding:32px 20px">
+          <div class="empty-icon">📊</div>
+          <div class="empty-title">Brak danych do wykresu</div>
+          <div class="empty-sub">Dodaj pierwsze sprzedaże aby zobaczyć wykres</div>
+          <button class="btn btn-primary" onclick="showPage('sales',document.querySelector('.nav-item:nth-child(2)'))">+ Dodaj sprzedaż</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title" data-i18n="sources_title">Źródła sprzedaży</div></div>
+      <div class="empty-state" style="padding:24px 10px">
+        <div class="empty-icon">🔗</div>
+        <div class="empty-sub" style="font-size:12px">Połącz platformy aby zobaczyć podział</div>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="showPage('sync',document.querySelector('.nav-item'))">Połącz Vinted</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Top Produkty — Profit per Item</div>
+        <span class="badge badge-purple">ten miesiąc</span>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">🏆</div>
+        <div class="empty-title">Brak sprzedaży</div>
+        <div class="empty-sub">Top produkty pojawią się gdy dodasz pierwsze sprzedaże</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="forecast-box">
+        <div class="forecast-label" data-i18n="forecast_label">🔮 Prognoza na ten miesiąc</div>
+        <div class="forecast-value">— zł</div>
+        <div class="forecast-sub">Dodaj sprzedaże aby zobaczyć prognozę</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Aktywność</div></div>
+        <div class="empty-state" style="padding:16px">
+          <div class="empty-icon" style="font-size:28px">😴</div>
+          <div class="empty-sub" style="font-size:12px">Brak aktywności — zacznij dodawać dane</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div class="card" style="border:1px solid rgba(124,58,237,0.3);background:linear-gradient(135deg,rgba(124,58,237,0.05),rgba(136,19,55,0.05))">
+    <div class="card-header">
+      <div class="card-title" style="color:var(--purple-light)">🚀 Pierwsze kroki — skonfiguruj AllInOne</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div class="auto-card" style="flex-direction:column;text-align:center;padding:16px;cursor:pointer" onclick="showPage('sync',document.querySelector('.nav-item'))">
+        <div style="font-size:28px;margin-bottom:8px">🟢</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Połącz Vinted</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Synchronizuj zamówienia</div>
+      </div>
+      <div class="auto-card" style="flex-direction:column;text-align:center;padding:16px;cursor:pointer" onclick="showPage('products',document.querySelector('.nav-item'))">
+        <div style="font-size:28px;margin-bottom:8px">📦</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Dodaj produkt</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Stwórz magazyn</div>
+      </div>
+      <div class="auto-card" style="flex-direction:column;text-align:center;padding:16px;cursor:pointer" onclick="showPage('costs',document.querySelector('.nav-item'))">
+        <div style="font-size:28px;margin-bottom:8px">💳</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Wpisz koszty</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Śledź wydatki</div>
+      </div>
+      <div class="auto-card" style="flex-direction:column;text-align:center;padding:16px;cursor:pointer" onclick="showPage('tax',document.querySelector('.nav-item'))">
+        <div style="font-size:28px;margin-bottom:8px">🧾</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Ustaw limit podatkowy</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Kontroluj finanse</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SPRZEDAŻ ===== -->
+<section class="page" id="page-sales">
+  <div class="breadcrumb"><span data-i18n="nav_sales">Sprzedaż</span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <select style="width:auto;padding:8px 12px"><option>Wszystkie platformy</option><option>Vinted</option><option>Etsy</option><option>eBay</option></select>
+      <select style="width:auto;padding:8px 12px"><option>Ten miesiąc</option><option>Poprzedni miesiąc</option><option>Ostatnie 3 miesiące</option><option>Cały rok</option></select>
+      <select style="width:auto;padding:8px 12px"><option>Wszystkie statusy</option><option>Sprzedane</option><option>Wysłane</option><option>Dostarczone</option><option>Zwrot</option></select>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('addSaleModal')">+ Dodaj sprzedaż</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Produkt</th><th>Platforma</th><th>Cena</th><th>Koszt</th><th>Prowizja</th><th>Wysyłka</th><th>Zysk</th><th>Status</th><th>Data</th></tr></thead>
+        <tbody id="salesTableBody">
+          <tr class="table-empty"><td colspan="9">Brak sprzedaży. Kliknij <strong>+ Dodaj sprzedaż</strong> lub zsynchronizuj Vinted.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRODUKTY ===== -->
+<section class="page" id="page-products">
+  <div class="breadcrumb"><span data-i18n="nav_products">Produkty</span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <select style="width:auto;padding:8px 12px"><option>Wszystkie kategorie</option><option>Ubrania</option><option>Buty</option><option>Akcesoria</option><option>Rękodzieło</option><option>Elektronika</option></select>
+      <div class="tags-wrap">
+        <div class="tag" onclick="this.classList.toggle('active')">vintage</div>
+        <div class="tag" onclick="this.classList.toggle('active')">y2k</div>
+        <div class="tag" onclick="this.classList.toggle('active')">nike</div>
+        <div class="tag" onclick="this.classList.toggle('active')">streetwear</div>
+        <div class="tag" onclick="this.classList.toggle('active')">rare</div>
+        <div class="tag" onclick="this.classList.toggle('active')">handmade</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('addProductModal')">+ Nowy produkt</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Produkt</th><th>Cena zakupu</th><th>Cena sprzedaży</th><th>Marża</th><th>Stan</th><th>Platformy</th><th>Tagi</th></tr></thead>
+        <tbody id="productsTableBody">
+          <tr class="table-empty"><td colspan="7">Brak produktów. Kliknij <strong>+ Nowy produkt</strong> aby dodać pierwszy.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MAGAZYN ===== -->
+<section class="page" id="page-inventory">
+  <div class="breadcrumb"><span data-i18n="nav_inventory">Magazyn</span></div>
+  <div class="grid-3-1">
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:14px;color:var(--text2)" id="invCount">0 produktów w magazynie</div>
+        <button class="btn btn-primary" onclick="openModal('addProductModal')">+ Dodaj produkt</button>
+      </div>
+      <div id="inventoryGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div style="border:2px dashed var(--border);background:transparent;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;min-height:140px;padding:16px;text-align:center" onclick="openModal('addProductModal')">
+          <div style="font-size:28px">+</div>
+          <div style="font-size:12px;color:var(--text3)">Dodaj pierwszy produkt</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="height:fit-content">
+      <div class="card-header"><div class="card-title">📁 Foldery</div></div>
+      <div>
+        <div class="folder"><span>📁</span>Produkty</div>
+        <div class="folder-children">
+          <div class="folder"><span>👔</span>ubrania <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="f_ubrania">0</span></div>
+          <div class="folder"><span>🕰️</span>vintage <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="f_vintage">0</span></div>
+          <div class="folder"><span>📱</span>elektronika <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="f_elektr">0</span></div>
+          <div class="folder"><span>✂️</span>rękodzieło <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="f_rekodz">0</span></div>
+        </div>
+        <div class="folder" style="margin-top:8px"><span>📂</span>Kolekcje</div>
+        <div class="folder-children">
+          <div class="folder"><span>🍂</span>kolekcja jesień</div>
+          <div class="folder"><span>☀️</span>kolekcja lato</div>
+          <div class="folder"><span>✨</span>nowe rzeczy</div>
+          <div class="folder"><span>🏷️</span>do sprzedaży</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PODATKI ===== -->
+<section class="page" id="page-tax">
+  <div class="breadcrumb"><span data-i18n="nav_tax">Kalkulator Podatkowy</span></div>
+  <div class="stats-grid">
+    <div class="stat-card purple"><div class="stat-icon">📅</div><div class="stat-label">Przychód ten miesiąc</div><div class="stat-value" id="tax_month">0 zł</div></div>
+    <div class="stat-card bordeaux"><div class="stat-icon">📆</div><div class="stat-label">Przychód roczny</div><div class="stat-value" id="tax_year">0 zł</div></div>
+    <div class="stat-card orange"><div class="stat-icon">🏦</div><div class="stat-label">Potencjalny podatek</div><div class="stat-value" id="tax_due">0 zł</div></div>
+    <div class="stat-card green"><div class="stat-icon">💵</div><div class="stat-label">Zysk po podatku</div><div class="stat-value" id="tax_net">0 zł</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🟢 Limit Działalności Nierejestrowanej</div>
+        <span class="badge badge-green" id="limitBadge">🟢 OK</span>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:13px;color:var(--text2)">Limit miesięczny 2026</span>
+          <strong id="limitVal">3 499 zł</strong>
+        </div>
+        <div class="tax-bar-wrap">
+          <div class="tax-bar" id="limitBar" style="width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3)">
+          <span>Obecny przychód: <strong style="color:var(--text)" id="limitCurrent">0 zł</strong></span>
+          <span>Pozostało: <strong id="limitLeft">3 499 zł</strong></span>
+        </div>
+      </div>
+      <div class="alert-box alert-green" id="limitAlert">🟢 Bezpiecznie — jesteś poniżej limitu działalności nierejestrowanej.</div>
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Poprzednie miesiące</div>
+        <div id="prevMonths" style="display:flex;flex-direction:column;gap:6px">
+          <div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Brak danych z poprzednich miesięcy</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Kalkulator Podatku</div></div>
+      <div class="form-group"><label>Przychód brutto (zł)</label><input type="number" value="0" id="taxIncome" oninput="calcTax()" placeholder="0"></div>
+      <div class="form-group"><label>Koszty uzyskania przychodu (zł)</label><input type="number" value="0" id="taxCosts" oninput="calcTax()" placeholder="0"></div>
+      <div class="form-group">
+        <label>Stawka podatku</label>
+        <select id="taxRate" onchange="calcTax()">
+          <option value="12">12% — Skala podatkowa (I próg)</option>
+          <option value="18" selected>18% — Ryczałt ewidencjonowany</option>
+          <option value="19">19% — Podatek liniowy</option>
+          <option value="32">32% — Skala podatkowa (II próg)</option>
+        </select>
+      </div>
+      <div class="calc-result">
+        <div class="calc-result-label">Szacowany podatek</div>
+        <div class="calc-result-value" id="taxVal">0 zł</div>
+        <div style="margin-top:8px;font-size:13px;opacity:0.8">Dochód netto: <strong id="taxNetCalc">0 zł</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== KOSZTY ===== -->
+<section class="page" id="page-costs">
+  <div class="breadcrumb"><span data-i18n="nav_costs">Koszty / Księgowość</span></div>
+  <div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:24px;flex-wrap:wrap">
+    <div class="stats-grid" style="flex:1;margin:0;min-width:600px">
+      <div class="stat-card purple"><div class="stat-label">Koszty dziś</div><div class="stat-value" id="c_today">0 zł</div></div>
+      <div class="stat-card bordeaux"><div class="stat-label">Koszty miesiąc</div><div class="stat-value" id="c_month">0 zł</div></div>
+      <div class="stat-card green"><div class="stat-label">Przychód</div><div class="stat-value" id="c_income">0 zł</div></div>
+      <div class="stat-card orange"><div class="stat-label">Zysk netto</div><div class="stat-value" id="c_net">0 zł</div></div>
+    </div>
+    <button class="btn btn-primary" style="white-space:nowrap;align-self:flex-start" onclick="openModal('addCostModal')">+ Dodaj koszt</button>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Ostatnie koszty</div></div>
+      <div id="costsListEl">
+        <div class="empty-state" style="padding:24px">
+          <div class="empty-icon">💳</div>
+          <div class="empty-title">Brak kosztów</div>
+          <div class="empty-sub">Kliknij + Dodaj koszt aby zacząć śledzić wydatki</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Koszty wg kategorii</div></div>
+      <div id="costsCatEl">
+        <div class="empty-state" style="padding:24px">
+          <div class="empty-icon">📊</div>
+          <div class="empty-sub">Dodaj koszty aby zobaczyć rozkład kategorii</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== KALKULATOR CENY ===== -->
+<section class="page" id="page-calculator">
+  <div class="breadcrumb"><span data-i18n="nav_calc">Kalkulator Ceny Sprzedaży</span></div>
+  <div class="grid-2" style="max-width:800px">
+    <div class="card">
+      <div class="card-header"><div class="card-title">🧮 Wpisz dane</div></div>
+      <div class="form-group"><label>Koszt zakupu (zł)</label><input type="number" id="c_buy" value="" placeholder="np. 100" oninput="calcPrice()"></div>
+      <div class="form-group">
+        <label>Prowizja platformy</label>
+        <select id="c_comm" onchange="calcPrice()">
+          <option value="5">Vinted — 5%</option>
+          <option value="8.5">Etsy — 8.5%</option>
+          <option value="12">eBay — 12%</option>
+          <option value="0">Własna platforma — 0%</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Koszt wysyłki (zł)</label><input type="number" id="c_ship" value="" placeholder="np. 15" oninput="calcPrice()"></div>
+      <div class="form-group"><label>Oczekiwana marża (%)</label><input type="number" id="c_margin" value="" placeholder="np. 60" oninput="calcPrice()"></div>
+      <div class="calc-result">
+        <div class="calc-result-label">Minimalna cena sprzedaży</div>
+        <div class="calc-result-value" id="calcResult">— zł</div>
+        <div style="margin-top:8px;font-size:13px;opacity:0.8" id="calcBreakdown">Wypełnij pola powyżej</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Rozkład ceny</div></div>
+      <div id="priceBreakdown">
+        <div class="empty-state">
+          <div class="empty-icon">🧮</div>
+          <div class="empty-sub">Wypełnij kalkulator aby zobaczyć rozkład ceny</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATYSTYKI ===== -->
+<section class="page" id="page-stats">
+  <div class="breadcrumb"><span data-i18n="nav_stats">Statystyki</span></div>
+  <div class="stats-grid">
+    <div class="stat-card purple"><div class="stat-label">Śr. cena sprzedaży</div><div class="stat-value" id="s_avg">— zł</div></div>
+    <div class="stat-card bordeaux"><div class="stat-label">Śr. czas sprzedaży</div><div class="stat-value">— dni</div></div>
+    <div class="stat-card green"><div class="stat-label">Najlepszy dzień</div><div class="stat-value">—</div></div>
+    <div class="stat-card orange"><div class="stat-label">Łącznie produktów</div><div class="stat-value" id="s_total">0</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Najlepsze kategorie</div></div>
+      <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-sub">Dodaj sprzedaże aby zobaczyć ranking kategorii</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Sprzedaż w czasie</div></div>
+      <div class="empty-state"><div class="empty-icon">📈</div><div class="empty-sub">Brak danych. Dodaj sprzedaże aby zobaczyć wykres.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== AUTOMATYZACJE ===== -->
+<section class="page" id="page-automations">
+  <div class="breadcrumb"><span data-i18n="nav_auto">Automatyzacje</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div style="font-size:14px;color:var(--text2)"><span class="live-dot"></span>Automatyzacje gotowe do użycia</div>
+    <button class="btn btn-primary">+ Nowa automatyzacja</button>
+  </div>
+  <div class="auto-card">
+    <div class="auto-icon">✅</div>
+    <div class="auto-info"><div class="auto-title">Po sprzedaży — aktualizacja statusu</div><div class="auto-desc">Automatycznie zmienia status na "Sprzedane" i dodaje do księgowości</div></div>
+    <div class="toggle" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="auto-card">
+    <div class="auto-icon">💬</div>
+    <div class="auto-info"><div class="auto-title">Wiadomość po zakupie</div><div class="auto-desc">"Dziękuję za zakup! Paczka zostanie wysłana jutro." — wysyłana automatycznie</div></div>
+    <div class="toggle" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="auto-card">
+    <div class="auto-icon">📉</div>
+    <div class="auto-info"><div class="auto-title">Przypomnienie o niesprzedanym produkcie</div><div class="auto-desc">Jeśli produkt nie sprzedał się w 30 dni → powiadomienie "Rozważ obniżenie ceny"</div></div>
+    <div class="toggle" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="auto-card">
+    <div class="auto-icon">📊</div>
+    <div class="auto-info"><div class="auto-title">Aktualizacja statystyk</div><div class="auto-desc">Po każdej sprzedaży automatycznie odświeża dashboard i wykresy</div></div>
+    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="auto-card">
+    <div class="auto-icon">🚨</div>
+    <div class="auto-info"><div class="auto-title">Alert limitu podatkowego</div><div class="auto-desc">Powiadom gdy przychód osiągnie 80%, 90% i 100% limitu działalności nierejestrowanej</div></div>
+    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="auto-card">
+    <div class="auto-icon">📦</div>
+    <div class="auto-info"><div class="auto-title">Raport tygodniowy e-mail</div><div class="auto-desc">Wysyła podsumowanie sprzedaży co poniedziałek rano</div></div>
+    <div class="toggle" onclick="this.classList.toggle('on')"></div>
+  </div>
+</section>
+
+<!-- ===== SKANER ===== -->
+<section class="page" id="page-scanner">
+  <div class="breadcrumb"><span data-i18n="nav_scanner">Skaner Rynku</span></div>
+  <div style="max-width:600px;margin:0 auto">
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔍 Mini Market Research</div></div>
+      <div class="form-group">
+        <label>Wpisz nazwę produktu</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="scannerInput" placeholder="np. Nike hoodie vintage..." style="flex:1">
+          <button class="btn btn-primary" onclick="runScanner()">Analizuj</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+        <div class="tag" onclick="document.getElementById('scannerInput').value=this.innerText">Nike hoodie</div>
+        <div class="tag" onclick="document.getElementById('scannerInput').value=this.innerText">vintage jacket</div>
+        <div class="tag" onclick="document.getElementById('scannerInput').value=this.innerText">y2k sweater</div>
+        <div class="tag" onclick="document.getElementById('scannerInput').value=this.innerText">handmade bag</div>
+      </div>
+      <div id="scannerResult" class="scanner-result" style="display:none">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--purple-light)" id="scannerTitle"></div>
+        <div class="scanner-stat"><span class="scanner-stat-label">📊 Średnia cena sprzedaży</span><span class="scanner-stat-value" id="sc1">—</span></div>
+        <div class="scanner-stat"><span class="scanner-stat-label">📈 Sprzedaży tygodniowo</span><span class="scanner-stat-value" id="sc2">—</span></div>
+        <div class="scanner-stat"><span class="scanner-stat-label">🛒 Aktywnych ofert</span><span class="scanner-stat-value" id="sc3">—</span></div>
+        <div class="scanner-stat"><span class="scanner-stat-label">⏱️ Śr. czas sprzedaży</span><span class="scanner-stat-value" id="sc4">—</span></div>
+        <div class="scanner-stat"><span class="scanner-stat-label">🔥 Popyt</span><span class="scanner-stat-value" id="sc5">—</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PLANER ===== -->
+<section class="page" id="page-planner">
+  <div class="breadcrumb"><span data-i18n="nav_planner">Planer Wystawiania</span></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📅 Plan tego tygodnia</div></div>
+      <div id="plannerWeek">
+        <div class="planner-day"><span class="planner-day-name">Poniedziałek</span><span class="planner-count empty">0</span></div>
+        <div class="planner-day"><span class="planner-day-name">Wtorek</span><span class="planner-count empty">0</span></div>
+        <div class="planner-day"><span class="planner-day-name">Środa</span><span class="planner-count empty">0</span></div>
+        <div class="planner-day"><span class="planner-day-name">Czwartek</span><span class="planner-count empty">0</span></div>
+        <div class="planner-day"><span class="planner-day-name">Piątek</span><span class="planner-count empty">0</span></div>
+        <div class="planner-day"><span class="planner-day-name">Sobota</span><span class="planner-count empty">0</span></div>
+        <div class="planner-day"><span class="planner-day-name">Niedziela</span><span class="planner-count empty">0</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">+ Zaplanuj wystawienie</div></div>
+      <div class="form-group"><label>Dzień tygodnia</label><select><option>Poniedziałek</option><option>Wtorek</option><option>Środa</option><option>Czwartek</option><option>Piątek</option><option>Sobota</option><option>Niedziela</option></select></div>
+      <div class="form-group"><label>Produkty do wystawienia</label><input type="text" placeholder="Wpisz nazwy produktów..."></div>
+      <div class="form-group"><label>Platforma</label><select><option>Vinted</option><option>Etsy</option><option>eBay</option><option>Wszystkie</option></select></div>
+      <div class="form-group"><label>Przypomnienie</label><select><option>1 godzina wcześniej</option><option>3 godziny wcześniej</option><option>1 dzień wcześniej</option></select></div>
+      <button class="btn btn-primary" style="width:100%">💾 Zapisz plan</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SYNC VINTED ===== -->
+<section class="page" id="page-sync">
+  <div class="breadcrumb"><span>🟢 Sync Vinted</span></div>
+  <div class="stats-grid">
+    <div class="stat-card purple"><div class="stat-icon">📦</div><div class="stat-label">Zamówień w bazie</div><div class="stat-value" id="syncStatTotal">0</div></div>
+    <div class="stat-card bordeaux"><div class="stat-icon">💰</div><div class="stat-label">Łączny przychód</div><div class="stat-value" id="syncStatRevenue">0 zł</div></div>
+    <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-label">Sprzedanych</div><div class="stat-value" id="syncStatSold">0</div></div>
+    <div class="stat-card orange"><div class="stat-icon">🕐</div><div class="stat-label">Ostatnia sync</div><div class="stat-value" style="font-size:13px;line-height:1.4" id="lastSync">Nigdy</div></div>
+  </div>
+  <div class="grid-2" style="align-items:start">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="card-header"><div style="display:flex;align-items:center;gap:10px"><div class="step-num">1</div><div class="card-title">Skopiuj skrypt do Google Sheets</div></div></div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          <div style="margin-bottom:10px">Wejdź na <strong style="color:var(--purple-light)">sheets.google.com</strong> → utwórz nowy arkusz → nazwij go <strong>AllInOne</strong></div>
+          <div style="margin-bottom:10px">Następnie kliknij:<br><span style="background:var(--bg4);padding:3px 8px;border-radius:5px;font-size:12px;border:1px solid var(--border2)">Rozszerzenia</span> → <span style="background:var(--bg4);padding:3px 8px;border-radius:5px;font-size:12px;border:1px solid var(--border2)">Apps Script</span></div>
+          <div style="margin-bottom:12px">Usuń istniejący kod i wklej cały kod z pliku <strong style="color:var(--purple-light)">vinted_script.gs</strong></div>
+          <div style="background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--text3)">💡 Po wklejeniu kliknij <strong style="color:var(--text)">Zapisz (Ctrl+S)</strong> → potem <strong style="color:var(--text)">Uruchom → onOpen</strong> → zaakceptuj uprawnienia do Gmaila</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div style="display:flex;align-items:center;gap:10px"><div class="step-num">2</div><div class="card-title">Włącz auto-sync w arkuszu</div></div></div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          <div style="margin-bottom:8px">Po uruchomieniu skryptu pojawi się nowe menu w Google Sheets:</div>
+          <div style="background:var(--bg4);border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid var(--border2)">
+            <div style="font-size:12px;font-weight:700;color:var(--purple-light);margin-bottom:6px">🛍️ AllInOne Vinted</div>
+            <div style="font-size:12px;color:var(--text2)">→ 🔄 Synchronizuj teraz<br>→ ⚡ Włącz auto-sync (co 15 min)<br>→ ❓ Pomoc</div>
+          </div>
+          <div>Kliknij <strong style="color:var(--purple-light)">⚡ Włącz auto-sync</strong></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div style="display:flex;align-items:center;gap:10px"><div class="step-num">3</div><div class="card-title">Udostępnij arkusz publicznie</div></div></div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          <div style="margin-bottom:8px">Kliknij <strong style="color:var(--text)">Udostępnij</strong> → zmień dostęp na:</div>
+          <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:10px;font-size:12px;color:#34d399;margin-bottom:8px">✅ Każda osoba z linkiem może wyświetlać</div>
+          <div style="font-size:12px;color:var(--text3)">⚠️ Tylko odczyt — Twoje dane są bezpieczne</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="card-header"><div style="display:flex;align-items:center;gap:10px"><div class="step-num">4</div><div class="card-title">Wklej link i synchronizuj</div></div></div>
+        <div class="form-group">
+          <label>Link do Twojego Google Sheets</label>
+          <input type="text" id="sheetsUrlInput" placeholder="https://docs.google.com/spreadsheets/d/...">
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Skopiuj link z paska adresu gdy masz otwarty arkusz</div>
+        </div>
+        <div id="syncStatus" class="alert-box" style="display:none"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="saveSheetsUrl()" style="flex:1">💾 Zapisz</button>
+          <button class="btn btn-primary" id="syncBtn" onclick="syncFromSheets()" style="flex:2">🔄 Synchronizuj</button>
+        </div>
+      </div>
+      <div class="card" style="border:1px solid rgba(124,58,237,0.3)">
+        <div class="card-header"><div class="card-title">🧪 Tryb demo</div></div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Załaduj przykładowe dane aby zobaczyć jak działa synchronizacja.</div>
+        <button class="btn btn-ghost" style="width:100%" onclick="loadDemoData()">▶ Załaduj dane demo</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Status systemu</div></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 10px;background:var(--bg4);border-radius:8px"><span>Gmail → Apps Script</span><span class="badge badge-yellow" id="st1">⚠️ Wymaga konfiguracji</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 10px;background:var(--bg4);border-radius:8px"><span>Apps Script → Sheets</span><span class="badge badge-yellow" id="st2">⚠️ Wymaga konfiguracji</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 10px;background:var(--bg4);border-radius:8px"><span>Google Sheets → AllInOne</span><span class="badge badge-red" id="st3">✗ Nie połączono</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <div class="card-header"><div class="card-title">📋 Zsynchronizowane zamówienia</div><button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="syncFromSheets()">🔄 Odśwież</button></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Produkt</th><th>Platforma</th><th>Cena</th><th>Status</th><th>Data</th><th>Kupujący</th></tr></thead>
+        <tbody id="syncTableBody">
+          <tr class="table-empty"><td colspan="6">Brak danych — skonfiguruj połączenie powyżej lub załaduj demo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INTEGRACJE ===== -->
+<section class="page" id="page-integrations">
+  <div class="breadcrumb"><span data-i18n="nav_int">Integracje</span></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:700px">
+    <div class="integration-card" onclick="showPage('sync',document.querySelector('.nav-item'))">
+      <div class="integration-logo">🟢</div><div class="integration-name">Vinted</div>
+      <div class="integration-status" style="color:var(--text3)">Nie połączone</div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text3)">Przez Google Sheets</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;font-size:12px">Konfiguruj</button>
+    </div>
+    <div class="integration-card">
+      <div class="integration-logo">🧡</div><div class="integration-name">Etsy</div>
+      <div class="integration-status" style="color:var(--text3)">Nie połączone</div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text3)">Oficjalne API</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;font-size:12px">Połącz</button>
+    </div>
+    <div class="integration-card">
+      <div class="integration-logo">🔵</div><div class="integration-name">eBay</div>
+      <div class="integration-status" style="color:var(--text3)">Nie połączone</div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text3)">Oficjalne API</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;font-size:12px">Połącz</button>
+    </div>
+    <div class="integration-card">
+      <div class="integration-logo">📊</div><div class="integration-name">Google Sheets</div>
+      <div class="integration-status" style="color:var(--text3)">Nie połączone</div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text3)">Eksport danych</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;font-size:12px">Połącz</button>
+    </div>
+    <div class="integration-card">
+      <div class="integration-logo">📧</div><div class="integration-name">Gmail</div>
+      <div class="integration-status" style="color:var(--text3)">Nie połączone</div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text3)">Powiadomienia e-mail</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;font-size:12px">Połącz</button>
+    </div>
+    <div class="integration-card">
+      <div class="integration-logo">📱</div><div class="integration-name">WhatsApp</div>
+      <div class="integration-status" style="color:var(--text3)">Nie połączone</div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text3)">Powiadomienia mobile</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;font-size:12px">Połącz</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RAPORTY ===== -->
+<section class="page" id="page-reports">
+  <div class="breadcrumb"><span data-i18n="nav_reports">Raporty</span></div>
+  <div class="grid-2" style="max-width:900px">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📑 Generuj raport</div></div>
+      <div class="form-group"><label>Typ raportu</label><select><option>Miesięczny</option><option>Roczny</option><option>Niestandardowy</option></select></div>
+      <div class="form-group">
+        <label>Zakres dat</label>
+        <div style="display:flex;gap:8px"><input type="date"><input type="date"></div>
+      </div>
+      <div class="form-group">
+        <label>Uwzględnij</label>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" checked style="width:auto"> Sprzedaż i przychody</label>
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" checked style="width:auto"> Koszty i wydatki</label>
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" checked style="width:auto"> Zysk netto</label>
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" style="width:auto"> Podatki i limity</label>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px"><button class="btn btn-primary" style="flex:1">📄 Generuj PDF</button><button class="btn btn-ghost" style="flex:1">📊 Eksport CSV</button></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Podgląd raportu</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border2);border-radius:8px;overflow:hidden;margin-bottom:16px">
+        <div class="report-stat"><div class="report-stat-val" style="color:var(--purple-light)" id="rpt_income">0 zł</div><div class="report-stat-lbl">Przychód</div></div>
+        <div class="report-stat"><div class="report-stat-val" style="color:#f87171" id="rpt_costs">0 zł</div><div class="report-stat-lbl">Koszty</div></div>
+        <div class="report-stat"><div class="report-stat-val" style="color:#34d399" id="rpt_profit">0 zł</div><div class="report-stat-lbl">Zysk netto</div></div>
+        <div class="report-stat"><div class="report-stat-val" id="rpt_sales">0</div><div class="report-stat-lbl">Sprzedaży</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);text-align:center">Dodaj dane aby wygenerować raport</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== USTAWIENIA ===== -->
+<section class="page" id="page-settings">
+  <div class="breadcrumb"><span data-i18n="nav_settings">Ustawienia</span></div>
+  <div style="max-width:700px">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div class="card-title">👤 Profil</div></div>
+      <div class="grid-2">
+        <div class="form-group"><label>Imię</label><input type="text" id="settFirstName" placeholder="Twoje imię"></div>
+        <div class="form-group"><label>Nazwisko</label><input type="text" id="settLastName" placeholder="Twoje nazwisko"></div>
+      </div>
+      <div class="form-group"><label>E-mail</label><input type="email" id="settEmail" placeholder="twoj@email.com"></div>
+      <button class="btn btn-primary" onclick="saveProfile()">Zapisz zmiany</button>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div class="card-title">🎨 Wygląd</div></div>
+      <div class="form-group">
+        <label>Motyw</label>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="setTheme('dark')" id="btnDark">🌙 Ciemny</button>
+          <button class="btn btn-ghost" onclick="setTheme('light')" id="btnLight">☀️ Jasny</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Język</label>
+        <select onchange="setLang(this.value)">
+          <option value="pl">🇵🇱 Polski</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="uk">🇺🇦 Українська</option>
+        </select>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div class="card-title">🔐 Bezpieczeństwo</div></div>
+      <div class="form-group"><label>Zmień hasło</label><input type="password" placeholder="Nowe hasło (min. 8 znaków)"></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-primary">Zmień hasło</button><button class="btn btn-ghost">📥 Backup danych</button><button class="btn btn-ghost">📤 Eksport CSV</button></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div class="card-title">🏦 Ustawienia podatkowe</div></div>
+      <div class="form-group"><label>Limit nierejestrowanej działalności (zł/mies)</label><input type="number" id="taxLimit" value="3499" oninput="updateTaxLimit()"></div>
+      <div class="form-group"><label>Domyślna stawka podatku</label><select id="defaultTaxRate"><option value="12">12%</option><option value="18" selected>18%</option><option value="19">19%</option></select></div>
+      <button class="btn btn-primary" onclick="saveTaxSettings()">Zapisz</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title" style="color:#f87171">⚠️ Strefa niebezpieczna</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="border-color:rgba(248,113,113,0.3);color:#f87171" onclick="if(confirm('Czy na pewno chcesz wylogować się ze wszystkich urządzeń?')) doLogout()">Wyloguj wszędzie</button>
+        <button class="btn btn-ghost" style="border-color:rgba(248,113,113,0.3);color:#f87171" onclick="if(confirm('Czy na pewno chcesz usunąć wszystkie dane? Tej operacji nie można cofnąć!')) clearAllData()">Usuń wszystkie dane</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div><!-- end #app -->
+
+<!-- ==================== MODALS ==================== -->
+<div id="modalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;backdrop-filter:blur(4px)" onclick="closeModal()"></div>
+
+<!-- ADD SALE MODAL -->
+<div id="addSaleModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:600;width:100%;max-width:520px;padding:16px">
+  <div class="card" style="border:1px solid var(--border)">
+    <div class="card-header"><div class="card-title">💸 Dodaj sprzedaż</div><span style="cursor:pointer;font-size:18px;color:var(--text3)" onclick="closeModal()">✕</span></div>
+    <div class="grid-2" style="gap:12px;margin-bottom:0">
+      <div class="form-group"><label>Nazwa produktu</label><input type="text" id="s_name" placeholder="np. Kurtka vintage"></div>
+      <div class="form-group"><label>Platforma</label><select id="s_platform"><option>Vinted</option><option>Etsy</option><option>eBay</option><option>Inne</option></select></div>
+      <div class="form-group"><label>Cena sprzedaży (zł)</label><input type="number" id="s_price" placeholder="0"></div>
+      <div class="form-group"><label>Koszt zakupu (zł)</label><input type="number" id="s_cost" placeholder="0"></div>
+      <div class="form-group"><label>Koszt wysyłki (zł)</label><input type="number" id="s_ship" placeholder="0"></div>
+      <div class="form-group"><label>Status</label><select id="s_status"><option>Sprzedane</option><option>Wysłane</option><option>Dostarczone</option><option>Zwrot</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Anuluj</button><button class="btn btn-primary" style="flex:2" onclick="addSale()">Dodaj sprzedaż</button></div>
+  </div>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div id="addProductModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:600;width:100%;max-width:520px;padding:16px">
+  <div class="card" style="border:1px solid var(--border)">
+    <div class="card-header"><div class="card-title">📦 Dodaj produkt</div><span style="cursor:pointer;font-size:18px;color:var(--text3)" onclick="closeModal()">✕</span></div>
+    <div class="grid-2" style="gap:12px;margin-bottom:0">
+      <div class="form-group" style="grid-column:1/-1"><label>Nazwa produktu</label><input type="text" id="p_name" placeholder="np. Kurtka vintage skórzana"></div>
+      <div class="form-group"><label>Cena zakupu (zł)</label><input type="number" id="p_buy" placeholder="0"></div>
+      <div class="form-group"><label>Cena sprzedaży (zł)</label><input type="number" id="p_sell" placeholder="0"></div>
+      <div class="form-group"><label>Kategoria</label><select id="p_cat"><option>Ubrania</option><option>Buty</option><option>Akcesoria</option><option>Rękodzieło</option><option>Elektronika</option></select></div>
+      <div class="form-group"><label>Stan</label><select id="p_state"><option value="dostępne">Dostępne</option><option value="w sprzedaży">W sprzedaży</option><option value="sprzedane">Sprzedane</option></select></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Tagi (oddziel przecinkami)</label><input type="text" id="p_tags" placeholder="np. vintage, nike, streetwear"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Anuluj</button><button class="btn btn-primary" style="flex:2" onclick="addProduct()">Dodaj produkt</button></div>
+  </div>
+</div>
+
+<!-- ADD COST MODAL -->
+<div id="addCostModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:600;width:100%;max-width:480px;padding:16px">
+  <div class="card" style="border:1px solid var(--border)">
+    <div class="card-header"><div class="card-title">💳 Dodaj koszt</div><span style="cursor:pointer;font-size:18px;color:var(--text3)" onclick="closeModal()">✕</span></div>
+    <div class="form-group"><label>Nazwa kosztu</label><input type="text" id="cost_name" placeholder="np. Zakup kurtki vintage"></div>
+    <div class="grid-2" style="gap:12px">
+      <div class="form-group"><label>Kwota (zł)</label><input type="number" id="cost_amount" placeholder="0"></div>
+      <div class="form-group"><label>Kategoria</label><select id="cost_cat"><option>zakup</option><option>wysyłka</option><option>materiały</option><option>reklama</option><option>inne</option></select></div>
+    </div>
+    <div class="form-group"><label>Data</label><input type="date" id="cost_date"></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Anuluj</button><button class="btn btn-primary" style="flex:2" onclick="addCost()">Dodaj koszt</button></div>
+  </div>
+</div>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+// ===== STATE =====
+let appState = {
+  user: null,
+  sales: [],
+  products: [],
+  costs: [],
+  taxLimit: 3499,
+  sheetsUrl: '',
+  syncedData: [],
+  theme: 'dark',
+  lang: 'pl'
+};
+
+// Load from localStorage
+function loadState() {
+  try {
+    const saved = localStorage.getItem('allinone_state');
+    if (saved) appState = { ...appState, ...JSON.parse(saved) };
+  } catch(e) {}
+}
+function saveState() {
+  try { localStorage.setItem('allinone_state', JSON.stringify(appState)); } catch(e) {}
+}
+
+// ===== AUTH =====
+function showScreen(id) {
+  document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function togglePass(id, el) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  el.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginError');
+  err.style.display = 'none';
+
+  if (!email || !pass) { err.textContent = 'Wypełnij wszystkie pola.'; err.style.display = 'block'; return; }
+
+  // Check saved accounts
+  const accounts = JSON.parse(localStorage.getItem('allinone_accounts') || '[]');
+  const account  = accounts.find(a => a.email === email && a.password === pass);
+
+  if (!account) {
+    // Also allow demo login
+    if (email === 'demo@allinone.pl' && pass === 'demo1234') {
+      loginSuccess({ first:'Demo', last:'User', email });
+      return;
+    }
+    err.textContent = 'Nieprawidłowy email lub hasło.';
+    err.style.display = 'block';
+    return;
+  }
+  loginSuccess(account);
+}
+
+function doRegister() {
+  const first = document.getElementById('regFirst').value.trim();
+  const last  = document.getElementById('regLast').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass  = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  const err   = document.getElementById('registerError');
+  err.style.display = 'none';
+
+  if (!first || !last || !email || !pass) { err.textContent = 'Wypełnij wszystkie pola.'; err.style.display = 'block'; return; }
+  if (pass.length < 8) { err.textContent = 'Hasło musi mieć minimum 8 znaków.'; err.style.display = 'block'; return; }
+  if (pass !== pass2) { err.textContent = 'Hasła nie są identyczne.'; err.style.display = 'block'; return; }
+  if (!email.includes('@')) { err.textContent = 'Podaj prawidłowy adres e-mail.'; err.style.display = 'block'; return; }
+
+  const accounts = JSON.parse(localStorage.getItem('allinone_accounts') || '[]');
+  if (accounts.find(a => a.email === email)) { err.textContent = 'Konto z tym e-mailem już istnieje.'; err.style.display = 'block'; return; }
+
+  accounts.push({ first, last, email, password: pass });
+  localStorage.setItem('allinone_accounts', JSON.stringify(accounts));
+  loginSuccess({ first, last, email });
+}
+
+function loginSuccess(user) {
+  appState.user = user;
+  saveState();
+
+  // Update UI
+  const name = user.first + ' ' + user.last;
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('topbarAvatar').textContent = (user.first[0] + user.last[0]).toUpperCase();
+
+  // Fill settings
+  document.getElementById('settFirstName').value = user.first || '';
+  document.getElementById('settLastName').value  = user.last  || '';
+  document.getElementById('settEmail').value     = user.email || '';
+
+  // Hide auth, show app
+  document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('app').classList.add('active');
+
+  // Restore theme
+  setTheme(appState.theme || 'dark');
+  setLang(appState.lang || 'pl');
+
+  // Render existing data
+  renderAll();
+}
+
+function doLogout() {
+  appState.user = null;
+  saveState();
+  document.getElementById('app').classList.remove('active');
+  showScreen('screenLogin');
+  // Clear form
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value  = '';
+}
+
+// ===== PAGE NAV =====
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = {
+    dashboard:'Dashboard', sales:'Sprzedaż', products:'Produkty',
+    inventory:'Magazyn', tax:'Podatki', costs:'Koszty',
+    calculator:'Kalkulator ceny', stats:'Statystyki', automations:'Automatyzacje',
+    scanner:'Skaner rynku', planner:'Planer', sync:'Sync Vinted',
+    integrations:'Integracje', reports:'Raporty', settings:'Ustawienia'
+  };
+  document.getElementById('topbarTitle').textContent = titles[id] || id;
+}
+
+// ===== THEME =====
+function toggleTheme() {
+  setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeBtn').textContent = t === 'dark' ? '🌙' : '☀️';
+  appState.theme = t;
+  saveState();
+}
+
+// ===== LANG =====
+const i18n = {
+  pl:{ nav_main:'Główne', nav_dashboard:'Dashboard', nav_sales:'Sprzedaż', nav_products:'Produkty', nav_inventory:'Magazyn', nav_finance:'Finanse', nav_tax:'Podatki', nav_costs:'Koszty', nav_calc:'Kalkulator ceny', nav_tools:'Narzędzia', nav_stats:'Statystyki', nav_auto:'Automatyzacje', nav_scanner:'Skaner rynku', nav_planner:'Planer', nav_other:'Inne', nav_int:'Integracje', nav_reports:'Raporty', nav_settings:'Ustawienia', stat_today:'Przychód dziś', stat_month:'Przychód w miesiącu', stat_profit:'Realny zysk', stat_orders:'Zamówienia', chart_title:'Sprzedaż — ostatnie 7 dni', sources_title:'Źródła sprzedaży', forecast_label:'🔮 Prognoza na ten miesiąc', search_placeholder:'Szukaj...' },
+  en:{ nav_main:'Main', nav_dashboard:'Dashboard', nav_sales:'Sales', nav_products:'Products', nav_inventory:'Inventory', nav_finance:'Finance', nav_tax:'Taxes', nav_costs:'Costs', nav_calc:'Price Calculator', nav_tools:'Tools', nav_stats:'Statistics', nav_auto:'Automations', nav_scanner:'Market Scanner', nav_planner:'Planner', nav_other:'Other', nav_int:'Integrations', nav_reports:'Reports', nav_settings:'Settings', stat_today:'Revenue today', stat_month:'Monthly revenue', stat_profit:'Net profit', stat_orders:'Orders', chart_title:'Sales — last 7 days', sources_title:'Sales sources', forecast_label:'🔮 Monthly forecast', search_placeholder:'Search...' },
+  de:{ nav_main:'Hauptmenü', nav_dashboard:'Dashboard', nav_sales:'Verkäufe', nav_products:'Produkte', nav_inventory:'Lager', nav_finance:'Finanzen', nav_tax:'Steuern', nav_costs:'Kosten', nav_calc:'Preisrechner', nav_tools:'Werkzeuge', nav_stats:'Statistiken', nav_auto:'Automationen', nav_scanner:'Marktscanner', nav_planner:'Planer', nav_other:'Sonstiges', nav_int:'Integrationen', nav_reports:'Berichte', nav_settings:'Einstellungen', stat_today:'Umsatz heute', stat_month:'Monatsumsatz', stat_profit:'Nettogewinn', stat_orders:'Bestellungen', chart_title:'Verkäufe — letzte 7 Tage', sources_title:'Verkaufsquellen', forecast_label:'🔮 Monatsprognose', search_placeholder:'Suchen...' },
+  uk:{ nav_main:'Головне', nav_dashboard:'Панель', nav_sales:'Продажі', nav_products:'Товари', nav_inventory:'Склад', nav_finance:'Фінанси', nav_tax:'Податки', nav_costs:'Витрати', nav_calc:'Калькулятор', nav_tools:'Інструменти', nav_stats:'Статистика', nav_auto:'Автоматизація', nav_scanner:'Сканер', nav_planner:'Планер', nav_other:'Інше', nav_int:'Інтеграції', nav_reports:'Звіти', nav_settings:'Налаштування', stat_today:'Дохід сьогодні', stat_month:'Дохід за місяць', stat_profit:'Чистий прибуток', stat_orders:'Замовлення', chart_title:'Продажі — 7 днів', sources_title:'Джерела продажів', forecast_label:'🔮 Прогноз', search_placeholder:'Пошук...' }
+};
+function setLang(lang) {
+  appState.lang = lang;
+  document.getElementById('langLabel').textContent = lang.toUpperCase();
+  document.querySelectorAll('[data-i18n]').forEach(el => { const k=el.getAttribute('data-i18n'); if(i18n[lang]&&i18n[lang][k]) el.textContent=i18n[lang][k]; });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const k=el.getAttribute('data-i18n-placeholder'); if(i18n[lang]&&i18n[lang][k]) el.placeholder=i18n[lang][k]; });
+  closeAllDropdowns(); saveState();
+}
+
+// ===== DROPDOWN =====
+function toggleDropdown(id) { const m=document.getElementById(id); const o=m.classList.contains('open'); closeAllDropdowns(); if(!o) m.classList.add('open'); }
+function closeAllDropdowns() { document.querySelectorAll('.dropdown-menu').forEach(m=>m.classList.remove('open')); }
+document.addEventListener('click', e => { if(!e.target.closest('.dropdown')) closeAllDropdowns(); });
+
+// ===== MODALS =====
+function openModal(id) {
+  document.getElementById('modalOverlay').style.display = 'block';
+  document.getElementById(id).style.display = 'block';
+  // Set today's date in cost modal
+  if (id === 'addCostModal') {
+    document.getElementById('cost_date').value = new Date().toISOString().split('T')[0];
+  }
+}
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+  document.querySelectorAll('[id$="Modal"]').forEach(m => m.style.display = 'none');
+}
+
+// ===== ADD SALE =====
+function addSale() {
+  const name     = document.getElementById('s_name').value.trim();
+  const platform = document.getElementById('s_platform').value;
+  const price    = parseFloat(document.getElementById('s_price').value) || 0;
+  const cost     = parseFloat(document.getElementById('s_cost').value) || 0;
+  const ship     = parseFloat(document.getElementById('s_ship').value) || 0;
+  const status   = document.getElementById('s_status').value;
+  if (!name) { alert('Podaj nazwę produktu'); return; }
+  const commRates = { Vinted:0.05, Etsy:0.085, eBay:0.12, Inne:0 };
+  const comm  = Math.round(price * (commRates[platform] || 0));
+  const profit= price - cost - ship - comm;
+  const sale  = { id: Date.now(), name, platform, price, cost, ship, comm, profit, status, date: new Date().toLocaleDateString('pl-PL') };
+  appState.sales.unshift(sale);
+  saveState(); renderAll(); closeModal();
+  // Clear
+  ['s_name','s_price','s_cost','s_ship'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ===== ADD PRODUCT =====
+function addProduct() {
+  const name = document.getElementById('p_name').value.trim();
+  const buy  = parseFloat(document.getElementById('p_buy').value) || 0;
+  const sell = parseFloat(document.getElementById('p_sell').value) || 0;
+  const cat  = document.getElementById('p_cat').value;
+  const state= document.getElementById('p_state').value;
+  const tags = document.getElementById('p_tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if (!name) { alert('Podaj nazwę produktu'); return; }
+  const product = { id: Date.now(), name, buy, sell, cat, state, tags, margin: sell - buy };
+  appState.products.unshift(product);
+  saveState(); renderAll(); closeModal();
+  ['p_name','p_buy','p_sell','p_tags'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ===== ADD COST =====
+function addCost() {
+  const name   = document.getElementById('cost_name').value.trim();
+  const amount = parseFloat(document.getElementById('cost_amount').value) || 0;
+  const cat    = document.getElementById('cost_cat').value;
+  const date   = document.getElementById('cost_date').value;
+  if (!name) { alert('Podaj nazwę kosztu'); return; }
+  const cost = { id: Date.now(), name, amount, cat, date: date ? new Date(date).toLocaleDateString('pl-PL') : new Date().toLocaleDateString('pl-PL') };
+  appState.costs.unshift(cost);
+  saveState(); renderAll(); closeModal();
+  document.getElementById('cost_name').value = '';
+  document.getElementById('cost_amount').value = '';
+}
+
+// ===== RENDER ALL =====
+function renderAll() {
+  renderSales();
+  renderProducts();
+  renderInventory();
+  renderCosts();
+  updateDashboard();
+  updateTaxPage();
+  updateReports();
+}
+
+function renderSales() {
+  const tbody = document.getElementById('salesTableBody');
+  if (!appState.sales.length) {
+    tbody.innerHTML = '<tr class="table-empty"><td colspan="9">Brak sprzedaży. Kliknij <strong>+ Dodaj sprzedaż</strong> lub zsynchronizuj Vinted.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = appState.sales.map(s => `
+    <tr>
+      <td>${s.name}</td>
+      <td><span class="badge platform-${s.platform.toLowerCase()}">${s.platform}</span></td>
+      <td>${s.price} zł</td>
+      <td>${s.cost} zł</td>
+      <td>${s.comm} zł</td>
+      <td>${s.ship} zł</td>
+      <td style="color:${s.profit>=0?'#34d399':'#f87171'};font-weight:700">${s.profit>=0?'+':''}${s.profit} zł</td>
+      <td><span class="badge ${statusBadge(s.status)}">${s.status}</span></td>
+      <td>${s.date}</td>
+    </tr>
+  `).join('');
+}
+
+function renderProducts() {
+  const tbody = document.getElementById('productsTableBody');
+  if (!appState.products.length) {
+    tbody.innerHTML = '<tr class="table-empty"><td colspan="7">Brak produktów. Kliknij <strong>+ Nowy produkt</strong> aby dodać pierwszy.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = appState.products.map(p => `
+    <tr>
+      <td>${p.name}</td>
+      <td>${p.buy} zł</td>
+      <td>${p.sell} zł</td>
+      <td style="color:#34d399;font-weight:600">+${p.margin} zł (${p.buy>0?Math.round(p.margin/p.sell*100):0}%)</td>
+      <td><span class="badge ${p.state==='sprzedane'?'badge-green':p.state==='w sprzedaży'?'badge-yellow':'badge-blue'}">${p.state}</span></td>
+      <td>—</td>
+      <td>${p.tags.map(t=>`<span class="tag" style="font-size:10px;padding:2px 8px">${t}</span>`).join(' ')}</td>
+    </tr>
+  `).join('');
+}
+
+function renderInventory() {
+  const grid = document.getElementById('inventoryGrid');
+  const icons = { Ubrania:'👔', Buty:'👟', Akcesoria:'👜', Rękodzieło:'✂️', Elektronika:'📱' };
+  const cards = appState.products.map(p => `
+    <div class="inv-card">
+      <div class="inv-img">${icons[p.cat]||'📦'}</div>
+      <div class="inv-name">${p.name}</div>
+      <div class="inv-price">${p.sell} zł</div>
+      <div style="font-size:11px;color:#34d399">+${p.margin} zł marży</div>
+    </div>
+  `).join('');
+  const addBtn = `<div style="border:2px dashed var(--border);background:transparent;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;min-height:140px;padding:16px;text-align:center" onclick="openModal('addProductModal')"><div style="font-size:28px">+</div><div style="font-size:12px;color:var(--text3)">Dodaj produkt</div></div>`;
+  grid.innerHTML = cards + addBtn;
+  document.getElementById('invCount').textContent = appState.products.length + ' produktów w magazynie';
+  // Folder counts
+  const cats = appState.products.reduce((a,p) => { a[p.cat]=(a[p.cat]||0)+1; return a; }, {});
+  document.getElementById('f_ubrania').textContent = cats['Ubrania']||0;
+  document.getElementById('f_vintage').textContent = appState.products.filter(p=>p.tags.includes('vintage')).length;
+  document.getElementById('f_elektr').textContent  = cats['Elektronika']||0;
+  document.getElementById('f_rekodz').textContent  = cats['Rękodzieło']||0;
+}
+
+function renderCosts() {
+  const el = document.getElementById('costsListEl');
+  if (!appState.costs.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:24px"><div class="empty-icon">💳</div><div class="empty-title">Brak kosztów</div><div class="empty-sub">Kliknij + Dodaj koszt aby zacząć śledzić wydatki</div></div>';
+  } else {
+    el.innerHTML = appState.costs.map(c => `
+      <div class="cost-item">
+        <span class="cost-cat-badge">${c.cat}</span>
+        <span class="cost-name">${c.name}</span>
+        <span class="cost-date">${c.date}</span>
+        <span class="cost-amount">-${c.amount} zł</span>
+      </div>
+    `).join('');
+  }
+  // Category breakdown
+  const catEl = document.getElementById('costsCatEl');
+  const cats = ['zakup','wysyłka','materiały','reklama','inne'];
+  const totals = cats.map(c => ({ cat:c, total: appState.costs.filter(x=>x.cat===c).reduce((s,x)=>s+x.amount,0) })).filter(x=>x.total>0);
+  const maxTotal = Math.max(...totals.map(x=>x.total), 1);
+  if (!totals.length) {
+    catEl.innerHTML = '<div class="empty-state" style="padding:24px"><div class="empty-icon">📊</div><div class="empty-sub">Dodaj koszty aby zobaczyć rozkład kategorii</div></div>';
+  } else {
+    catEl.innerHTML = totals.map(x => `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+          <span>${x.cat}</span><strong>${x.total} zł</strong>
+        </div>
+        <div class="tax-bar-wrap"><div class="tax-bar" style="width:${Math.round(x.total/maxTotal*100)}%"></div></div>
+      </div>
+    `).join('');
+  }
+  // Stats
+  const today = new Date().toLocaleDateString('pl-PL');
+  const todayCosts = appState.costs.filter(c=>c.date===today).reduce((s,c)=>s+c.amount,0);
+  const monthCosts = appState.costs.reduce((s,c)=>s+c.amount,0);
+  const income = appState.sales.reduce((s,x)=>s+x.price,0);
+  document.getElementById('c_today').textContent = todayCosts + ' zł';
+  document.getElementById('c_month').textContent = monthCosts + ' zł';
+  document.getElementById('c_income').textContent = income + ' zł';
+  document.getElementById('c_net').textContent = (income - monthCosts) + ' zł';
+}
+
+function updateDashboard() {
+  const today = new Date().toLocaleDateString('pl-PL');
+  const todaySales  = appState.sales.filter(s=>s.date===today);
+  const todayRev    = todaySales.reduce((s,x)=>s+x.price,0);
+  const monthRev    = appState.sales.reduce((s,x)=>s+x.price,0);
+  const totalProfit = appState.sales.reduce((s,x)=>s+x.profit,0);
+  document.getElementById('d_today').textContent  = todayRev + ' zł';
+  document.getElementById('d_month').textContent  = monthRev + ' zł';
+  document.getElementById('d_profit').textContent = totalProfit + ' zł';
+  document.getElementById('d_orders').textContent = appState.sales.length;
+  document.getElementById('s_avg').textContent    = appState.sales.length ? Math.round(monthRev/appState.sales.length)+' zł' : '— zł';
+  document.getElementById('s_total').textContent  = appState.products.length;
+}
+
+function updateTaxPage() {
+  const income = appState.sales.reduce((s,x)=>s+x.price,0);
+  const costs  = appState.costs.reduce((s,c)=>s+c.amount,0);
+  document.getElementById('tax_month').textContent = income + ' zł';
+  document.getElementById('tax_year').textContent  = income + ' zł';
+  document.getElementById('taxIncome').value       = income;
+  document.getElementById('taxCosts').value        = costs;
+  calcTax();
+  // Limit bar
+  const limit = appState.taxLimit || 3499;
+  const pct   = Math.min(Math.round(income/limit*100), 100);
+  document.getElementById('limitBar').style.width    = pct + '%';
+  document.getElementById('limitCurrent').textContent= income + ' zł';
+  document.getElementById('limitLeft').textContent   = Math.max(0, limit - income) + ' zł';
+  const badge = document.getElementById('limitBadge');
+  const alert = document.getElementById('limitAlert');
+  if (pct >= 100) {
+    badge.className = 'badge badge-red'; badge.textContent = '🔴 Przekroczono';
+    alert.className = 'alert-box alert-red'; alert.textContent = '🔴 Przekroczono limit działalności nierejestrowanej! Skonsultuj się z księgowym.';
+  } else if (pct >= 80) {
+    badge.className = 'badge badge-yellow'; badge.textContent = '🟡 Blisko limitu';
+    alert.className = 'alert-box alert-yellow'; alert.textContent = `🟡 Blisko limitu! Zostało Ci tylko ${limit-income} zł. Rozważ rejestrację działalności.`;
+  } else {
+    badge.className = 'badge badge-green'; badge.textContent = '🟢 OK';
+    alert.className = 'alert-box alert-green'; alert.textContent = `🟢 Bezpiecznie — jesteś poniżej limitu działalności nierejestrowanej.`;
+  }
+}
+
+function updateReports() {
+  const income = appState.sales.reduce((s,x)=>s+x.price,0);
+  const costs  = appState.costs.reduce((s,c)=>s+c.amount,0);
+  document.getElementById('rpt_income').textContent = income + ' zł';
+  document.getElementById('rpt_costs').textContent  = costs + ' zł';
+  document.getElementById('rpt_profit').textContent = (income-costs) + ' zł';
+  document.getElementById('rpt_sales').textContent  = appState.sales.length;
+}
+
+// ===== TAX CALC =====
+function calcTax() {
+  const income = parseFloat(document.getElementById('taxIncome').value)||0;
+  const costs  = parseFloat(document.getElementById('taxCosts').value)||0;
+  const rate   = parseFloat(document.getElementById('taxRate').value)/100;
+  const base   = Math.max(0, income-costs);
+  const tax    = Math.round(base*rate);
+  const net    = base-tax;
+  document.getElementById('taxVal').textContent     = tax + ' zł';
+  document.getElementById('taxNetCalc').textContent = net + ' zł';
+  document.getElementById('tax_due').textContent    = tax + ' zł';
+  document.getElementById('tax_net').textContent    = net + ' zł';
+}
+
+// ===== PRICE CALC =====
+function calcPrice() {
+  const buy    = parseFloat(document.getElementById('c_buy').value);
+  const comm   = parseFloat(document.getElementById('c_comm').value)/100;
+  const ship   = parseFloat(document.getElementById('c_ship').value)||0;
+  const margin = parseFloat(document.getElementById('c_margin').value)/100;
+  if (isNaN(buy) || isNaN(margin) || (1-comm-margin) <= 0) {
+    document.getElementById('calcResult').textContent = '— zł';
+    document.getElementById('priceBreakdown').innerHTML = '<div class="empty-state"><div class="empty-icon">🧮</div><div class="empty-sub">Wypełnij pola aby zobaczyć wynik</div></div>';
+    return;
+  }
+  const minSell  = Math.ceil((buy+ship)/(1-comm-margin));
+  const commAmt  = Math.round(minSell*comm);
+  const profit   = Math.round(minSell*(1-comm)-buy-ship);
+  const pct = (v,t) => Math.round(v/t*100);
+  document.getElementById('calcResult').querySelector('.calc-result-value').textContent = minSell + ' zł';
+  document.getElementById('calcBreakdown').innerHTML = `koszt całkowity: <strong>${buy+ship} zł</strong> · zysk: <strong>+${profit} zł</strong>`;
+  document.getElementById('priceBreakdown').innerHTML = `
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Rozkład ceny <strong style="color:var(--text)">${minSell} zł</strong></div>
+    ${[['🛒 Koszt zakupu',buy,'#d97706,#f59e0b'],['📦 Wysyłka',ship,'#0891b2,#22d3ee'],['🏦 Prowizja',commAmt,'var(--bordeaux),var(--accent)'],['✨ Twój zysk',profit,'var(--purple),var(--bordeaux-light)']].map(([l,v,g])=>`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+          <span>${l}</span><span>${v} zł (${pct(v,minSell)}%)</span>
+        </div>
+        <div class="tax-bar-wrap"><div class="tax-bar" style="width:${Math.max(0,pct(v,minSell))}%;background:linear-gradient(90deg,${g})"></div></div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ===== SCANNER =====
+const scanData = {
+  'nike hoodie':     { avg:'280–420 zł', weekly:'47 sprzedaży', offers:'214 aktywnych', time:'4–8 dni', demand:'🔥 Bardzo wysoki' },
+  'vintage jacket':  { avg:'180–550 zł', weekly:'32 sprzedaży', offers:'380 aktywnych', time:'7–14 dni', demand:'🔥 Wysoki' },
+  'y2k sweater':     { avg:'120–240 zł', weekly:'28 sprzedaży', offers:'156 aktywnych', time:'5–10 dni', demand:'🟡 Średni' },
+  'handmade bag':    { avg:'200–480 zł', weekly:'19 sprzedaży', offers:'94 aktywnych',  time:'10–20 dni', demand:'🟡 Średni' },
+};
+function runScanner() {
+  const q = document.getElementById('scannerInput').value.trim().toLowerCase();
+  const res = document.getElementById('scannerResult');
+  res.style.display = 'block';
+  const d = scanData[q] || {
+    avg:  (Math.floor(Math.random()*300)+100)+'–'+(Math.floor(Math.random()*300)+300)+' zł',
+    weekly: (Math.floor(Math.random()*50)+5)+' sprzedaży',
+    offers: (Math.floor(Math.random()*300)+50)+' aktywnych',
+    time:   (Math.floor(Math.random()*7)+3)+'–'+(Math.floor(Math.random()*10)+10)+' dni',
+    demand: ['🔥 Bardzo wysoki','🔥 Wysoki','🟡 Średni','🟢 Niski'][Math.floor(Math.random()*4)]
+  };
+  document.getElementById('scannerTitle').textContent = `📊 Wyniki dla: "${document.getElementById('scannerInput').value}"`;
+  document.getElementById('sc1').textContent = d.avg;
+  document.getElementById('sc2').textContent = d.weekly;
+  document.getElementById('sc3').textContent = d.offers;
+  document.getElementById('sc4').textContent = d.time;
+  document.getElementById('sc5').textContent = d.demand;
+}
+
+// ===== SYNC VINTED =====
+function saveSheetsUrl() {
+  const url = document.getElementById('sheetsUrlInput').value.trim();
+  if (!url) { showSyncStatus('Wklej link do arkusza!', 'error'); return; }
+  appState.sheetsUrl = url;
+  saveState();
+  showSyncStatus('✅ Link zapisany! Teraz kliknij Synchronizuj.', 'success');
+}
+
+async function syncFromSheets() {
+  const url = document.getElementById('sheetsUrlInput').value.trim() || appState.sheetsUrl;
+  if (!url) { showSyncStatus('Najpierw wklej link do arkusza Google Sheets!', 'error'); return; }
+  showSyncStatus('⏳ Łączenie z Google Sheets...', 'loading');
+  document.getElementById('syncBtn').textContent = '⏳ Synchronizuję...';
+  document.getElementById('syncBtn').disabled = true;
+  try {
+    const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) throw new Error('Nieprawidłowy link. Skopiuj link z paska adresu Google Sheets.');
+    const gidMatch = url.match(/gid=(\d+)/);
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv&gid=${gidMatch?gidMatch[1]:'0'}`;
+    const response = await fetch(csvUrl);
+    if (!response.ok) throw new Error('Nie można pobrać danych. Sprawdź czy arkusz jest udostępniony publicznie.');
+    const text = await response.text();
+    const rows = text.trim().split('\n').map(l => l.split(',').map(c=>c.replace(/^"|"$/g,'').trim()));
+    if (rows.length < 2) throw new Error('Arkusz jest pusty lub ma nieprawidłowy format.');
+    appState.syncedData = rows.slice(1).map(r => ({ product:r[0]||'—', price:r[1]||'0', status:r[2]||'—', date:r[3]||'—', buyer:r[4]||'—', platform:r[5]||'Vinted' })).filter(r=>r.product!=='—');
+    saveState();
+    renderSyncTable(appState.syncedData);
+    updateSyncStats(appState.syncedData);
+    document.getElementById('lastSync').textContent = new Date().toLocaleString('pl-PL');
+    document.getElementById('st3').textContent = '✓ Połączono'; document.getElementById('st3').className = 'badge badge-green';
+    showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień!`, 'success');
+  } catch(e) {
+    showSyncStatus('❌ ' + e.message, 'error');
+  }
+  document.getElementById('syncBtn').textContent = '🔄 Synchronizuj';
+  document.getElementById('syncBtn').disabled = false;
+}
+
+function renderSyncTable(data) {
+  const tb = document.getElementById('syncTableBody');
+  if (!data.length) { tb.innerHTML = '<tr class="table-empty"><td colspan="6">Brak danych</td></tr>'; return; }
+  tb.innerHTML = data.map(r => `<tr><td>${r.product}</td><td><span class="badge platform-vinted">Vinted</span></td><td>${r.price} zł</td><td><span class="badge ${statusBadge(r.status)}">${r.status}</span></td><td>${r.date}</td><td>${r.buyer}</td></tr>`).join('');
+}
+
+function updateSyncStats(data) {
+  const rev  = data.reduce((s,r)=>s+(parseFloat(r.price)||0),0);
+  const sold = data.filter(r=>['Sprzedane','Dostarczone'].includes(r.status)).length;
+  document.getElementById('syncStatTotal').textContent   = data.length;
+  document.getElementById('syncStatRevenue').textContent = Math.round(rev) + ' zł';
+  document.getElementById('syncStatSold').textContent    = sold;
+}
+
+function loadDemoData() {
+  appState.syncedData = [
+    { product:'Kurtka vintage skórzana', price:'500', status:'Dostarczone', date:'09.03.2026', buyer:'user_marta92', platform:'Vinted' },
+    { product:'Bluza Nike vintage L',    price:'340', status:'Wysłane',     date:'08.03.2026', buyer:'style_hunter', platform:'Vinted' },
+    { product:"Spodnie Levi's 501",      price:'220', status:'Sprzedane',   date:'07.03.2026', buyer:'retroshop_pl', platform:'Vinted' },
+    { product:'Płaszcz wełniany y2k',    price:'280', status:'Dostarczone', date:'06.03.2026', buyer:'vintage_lover',platform:'Vinted' },
+    { product:'Sneakersy Adidas 90s',    price:'310', status:'Dostarczone', date:'05.03.2026', buyer:'kicks_fan',    platform:'Vinted' },
+  ];
+  saveState();
+  renderSyncTable(appState.syncedData);
+  updateSyncStats(appState.syncedData);
+  document.getElementById('lastSync').textContent = 'Demo — ' + new Date().toLocaleString('pl-PL');
+  showSyncStatus('✅ Dane demo załadowane! Tak będzie wyglądać po prawdziwej synchronizacji.', 'success');
+}
+
+function showSyncStatus(msg, type) {
+  const el = document.getElementById('syncStatus');
+  el.textContent = msg;
+  el.className = 'alert-box ' + (type==='error'?'alert-red':type==='loading'?'alert-yellow':'alert-green');
+  el.style.display = 'block';
+}
+
+function statusBadge(s) {
+  if (!s) return 'badge-purple';
+  const sl = s.toLowerCase();
+  if (sl.includes('dostarczon')) return 'badge-green';
+  if (sl.includes('wysłan'))     return 'badge-yellow';
+  if (sl.includes('zwrot'))      return 'badge-red';
+  return 'badge-blue';
+}
+
+// ===== SETTINGS =====
+function saveProfile() {
+  if (!appState.user) return;
+  appState.user.first = document.getElementById('settFirstName').value.trim() || appState.user.first;
+  appState.user.last  = document.getElementById('settLastName').value.trim()  || appState.user.last;
+  appState.user.email = document.getElementById('settEmail').value.trim()     || appState.user.email;
+  const name = appState.user.first + ' ' + appState.user.last;
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('topbarAvatar').textContent = (appState.user.first[0]+appState.user.last[0]).toUpperCase();
+  saveState();
+  alert('✅ Profil zapisany!');
+}
+
+function updateTaxLimit() {
+  appState.taxLimit = parseInt(document.getElementById('taxLimit').value) || 3499;
+  document.getElementById('limitVal').textContent = appState.taxLimit.toLocaleString('pl-PL') + ' zł';
+  updateTaxPage();
+}
+
+function saveTaxSettings() {
+  appState.taxLimit = parseInt(document.getElementById('taxLimit').value) || 3499;
+  saveState();
+  alert('✅ Ustawienia podatkowe zapisane!');
+}
+
+function clearAllData() {
+  appState.sales = []; appState.products = []; appState.costs = []; appState.syncedData = [];
+  saveState(); renderAll();
+  alert('Wszystkie dane zostały usunięte.');
+}
+
+// ===== INIT =====
+window.addEventListener('load', () => {
+  loadState();
+  // Apply saved theme
+  setTheme(appState.theme || 'dark');
+  // Check if logged in
+  if (appState.user) {
+    loginSuccess(appState.user);
+  } else {
+    showScreen('screenLogin');
+  }
+  // Enter key on login
+  document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  document.getElementById('loginEmail').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  // Restore sheets url
+  if (appState.sheetsUrl) {
+    const inp = document.getElementById('sheetsUrlInput');
+    if (inp) inp.value = appState.sheetsUrl;
+  }
+  // Restore sync table
+  if (appState.syncedData && appState.syncedData.length) {
+    renderSyncTable(appState.syncedData);
+    updateSyncStats(appState.syncedData);
+  }
+});
+</script>
+</body>
+</html>
