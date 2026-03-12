@@ -1926,6 +1926,19 @@ function doRegister() {
 }
 
 function loginSuccess(user) {
+  const isDemo = user.email === 'demo@allinone.pl';
+
+  // Dla prawdziwego użytkownika — zawsze czyść pozostałości po demo
+  if (!isDemo) {
+    appState.plan = appState.plan === 'ultra' ? 'free' : (appState.plan || 'free');
+    if (appState._demoData) {
+      appState.syncedData = [];
+      appState._demoData = false;
+    }
+    // Odblokuj wszystkie sekcje (usuń overlaye i przywróć nav)
+    applyDemoLocks(false);
+  }
+
   appState.user = user;
   saveState();
 
@@ -1946,22 +1959,16 @@ function loginSuccess(user) {
   renderAll();
   updatePlanUI();
 
-  const isDemo = user.email === 'demo@allinone.pl';
-
   if (isDemo) {
-    // Demo — zablokuj wybrane sekcje
     applyDemoLocks(true);
-    // Pokaż demo data od razu
     setTimeout(() => {
       const sd = document.getElementById('sheetsUrlInput');
       if (sd) sd.value = appState.sheetsUrl || '';
     }, 100);
   } else if (user._isNew) {
-    // Nowy użytkownik — pokaż welcome modal
-    delete user.appState;
+    delete user._isNew;
     setTimeout(() => showWelcome(user.first), 400);
   } else {
-    // Powracający użytkownik — wizard jeśli nie skonfigurował
     if (!appState.wizardDone && !appState.syncedData?.length) {
       setTimeout(() => showWizard(), 600);
     }
@@ -1987,7 +1994,7 @@ function closeWelcome() {
 
 // ===== DEMO LOCKS =====
 // Strony zablokowane w trybie demo (wymaga rejestracji)
-const DEMO_LOCKED_PAGES = ['tax', 'costs', 'reports', 'year', 'plans'];
+const DEMO_LOCKED_PAGES = ['tax', 'costs', 'reports', 'year']; // 'plans' zawsze widoczne
 
 function applyDemoLocks(isDemo) {
   // Nav items
@@ -2039,7 +2046,11 @@ function showDemoLockToast(page) {
 }
 
 function doLogout() {
+  // Wyczyść demo locki przed wylogowaniem
+  applyDemoLocks(false);
   appState.user = null;
+  appState._demoData = false;
+  if (appState.plan === 'ultra' && !appState._realPlan) appState.plan = 'free';
   saveState();
   document.getElementById('app').classList.remove('active');
   showScreen('screenLogin');
@@ -3417,8 +3428,11 @@ document.querySelectorAll('.nav-item').forEach(el => {
 
 // ===== QUICK DEMO LOGIN =====
 function quickDemo() {
+  // Oznacz dane jako demo — zostaną wyczyszczone gdy użytkownik się zarejestruje/zaloguje
   appState.plan = 'ultra';
-  // Załaduj przykładowe dane demo
+  appState._demoData = true;
+  appState.sales = [];
+  appState.costs = [];
   appState.syncedData = [
     { product:'Stone Island kurtka L',   price:'485', status:'Sprzedane',   date:'21.12.2025', buyer:'demo_user1', platform:'Vinted' },
     { product:'Szalik wełniany COS',     price:'55',  status:'Dostarczone', date:'12.12.2025', buyer:'demo_user2', platform:'Vinted' },
