@@ -499,6 +499,39 @@ select option { background:var(--bg3); }
 ::-webkit-scrollbar-thumb:hover { background:var(--purple); }
 
 @media(max-width:1200px) { .stats-grid{grid-template-columns:repeat(2,1fr)} .grid-3{grid-template-columns:1fr 1fr} }
+
+/* ===== PLANS ===== */
+.plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:900px; }
+.plan-card { border-radius:14px; border:1.5px solid var(--border2); padding:24px; display:flex; flex-direction:column; gap:12px; position:relative; background:var(--card); transition:transform .2s,box-shadow .2s; }
+.plan-card:hover { transform:translateY(-3px); box-shadow:0 8px 32px rgba(0,0,0,.25); }
+.plan-card.plan-popular { border-color:#7c3aed; box-shadow:0 0 0 1px #7c3aed40; }
+.plan-card.plan-ultra { border-color:#f59e0b; box-shadow:0 0 0 1px #f59e0b40; }
+.plan-badge-top { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--grad); color:#fff; font-size:11px; font-weight:700; padding:4px 14px; border-radius:20px; white-space:nowrap; }
+.plan-name { font-size:20px; font-weight:800; font-family:'Syne',sans-serif; }
+.plan-price { font-size:36px; font-weight:900; font-family:'Syne',sans-serif; line-height:1; }
+.plan-price span { font-size:14px; font-weight:400; color:var(--text3); }
+.plan-perks { display:flex; flex-direction:column; gap:7px; flex:1; }
+.plan-perk { font-size:13px; color:var(--text2); display:flex; align-items:flex-start; gap:6px; }
+.plan-perk.no { color:var(--text3); text-decoration:line-through; }
+.plan-perk b { color:var(--text); }
+.plan-btn { margin-top:8px; }
+.current-plan-badge { display:inline-block; background:rgba(52,211,153,.15); color:#34d399; border:1px solid rgba(52,211,153,.3); border-radius:20px; font-size:11px; font-weight:700; padding:3px 12px; }
+/* ===== EDIT MODAL ===== */
+.edit-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:600; width:100%; max-width:520px; padding:16px; }
+/* ===== PDF REPORT ===== */
+.pdf-preview { background:#fff; color:#111; padding:32px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; line-height:1.6; max-height:70vh; overflow-y:auto; }
+.pdf-preview h1 { font-size:20px; font-weight:800; margin:0 0 4px; color:#1a1a2e; }
+.pdf-preview h2 { font-size:14px; font-weight:700; margin:20px 0 8px; color:#1a1a2e; border-bottom:2px solid #7c3aed; padding-bottom:4px; }
+.pdf-preview .pdf-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; border-bottom:3px solid #7c3aed; padding-bottom:16px; }
+.pdf-preview table { width:100%; border-collapse:collapse; font-size:12px; }
+.pdf-preview th { background:#f5f3ff; color:#1a1a2e; font-weight:700; padding:6px 8px; text-align:left; border:1px solid #e0d9fa; }
+.pdf-preview td { padding:5px 8px; border:1px solid #ede9fe; }
+.pdf-preview tr:nth-child(even) td { background:#faf9ff; }
+.pdf-preview .sum-row td { font-weight:700; background:#f5f3ff; }
+.pdf-preview .info-box { background:#f5f3ff; border-left:4px solid #7c3aed; padding:10px 14px; border-radius:0 6px 6px 0; font-size:12px; margin:8px 0; }
+.pdf-preview .warn-box { background:#fff7ed; border-left:4px solid #f59e0b; padding:10px 14px; border-radius:0 6px 6px 0; font-size:12px; margin:8px 0; }
+@media print { .pdf-preview { max-height:none; } }
+
 </style>
 </head>
 <body>
@@ -651,6 +684,9 @@ select option { background:var(--bg3); }
       <div class="nav-item" onclick="showPage('reports',this)">
         <span class="nav-icon">📑</span><span data-i18n="nav_reports">Raporty</span>
       </div>
+      <div class="nav-item" onclick="showPage('plans',this)">
+        <span class="nav-icon">⭐</span>Plany
+      </div>
       <div class="nav-item" onclick="showPage('settings',this)">
         <span class="nav-icon">⚙️</span><span data-i18n="nav_settings">Ustawienia</span>
       </div>
@@ -748,7 +784,11 @@ select option { background:var(--bg3); }
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title" data-i18n="sources_title">Źródła sprzedaży</div></div>
-      <div id="sourcesDonut" style="padding:16px 10px"><div class="empty-state" style="padding:16px 10px"><div class="empty-icon">🔗</div><div class="empty-sub" style="font-size:12px">Połącz platformy aby zobaczyć podział</div><button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="showPage('sync',document.querySelector('.nav-item'))">Połącz Vinted</button></div></div>
+      <div class="empty-state" style="padding:24px 10px">
+        <div class="empty-icon">🔗</div>
+        <div class="empty-sub" style="font-size:12px">Połącz platformy aby zobaczyć podział</div>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="showPage('sync',document.querySelector('.nav-item'))">Połącz Vinted</button>
+      </div>
     </div>
   </div>
 
@@ -758,12 +798,16 @@ select option { background:var(--bg3); }
         <div class="card-title">Top Produkty — Profit per Item</div>
         <span class="badge badge-purple">ten miesiąc</span>
       </div>
-      <div id="topProductsList"><div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-title">Brak sprzedaży</div><div class="empty-sub">Top produkty pojawią się gdy dodasz pierwsze sprzedaże</div></div></div>
+      <div class="empty-state">
+        <div class="empty-icon">🏆</div>
+        <div class="empty-title">Brak sprzedaży</div>
+        <div class="empty-sub">Top produkty pojawią się gdy dodasz pierwsze sprzedaże</div>
+      </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:16px">
       <div class="forecast-box">
         <div class="forecast-label" data-i18n="forecast_label">🔮 Prognoza na ten miesiąc</div>
-        <div class="forecast-value" id="forecastValue">— zł</div>
+        <div class="forecast-value">— zł</div>
         <div class="forecast-sub">Dodaj sprzedaże aby zobaczyć prognozę</div>
       </div>
       <div class="card">
@@ -1271,34 +1315,124 @@ select option { background:var(--bg3); }
 <!-- ===== RAPORTY ===== -->
 <section class="page" id="page-reports">
   <div class="breadcrumb"><span data-i18n="nav_reports">Raporty</span></div>
-  <div class="grid-2" style="max-width:900px">
+  <div class="grid-2" style="max-width:900px;margin-bottom:24px">
     <div class="card">
-      <div class="card-header"><div class="card-title">📑 Generuj raport</div></div>
-      <div class="form-group"><label>Typ raportu</label><select><option>Miesięczny</option><option>Roczny</option><option>Niestandardowy</option></select></div>
+      <div class="card-header"><div class="card-title">📑 Generuj raport podatkowy</div></div>
       <div class="form-group">
-        <label>Zakres dat</label>
-        <div style="display:flex;gap:8px"><input type="date"><input type="date"></div>
+        <label>Rok podatkowy</label>
+        <select id="rpt_year" onchange="updateReports()">
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+        </select>
       </div>
       <div class="form-group">
-        <label>Uwzględnij</label>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
-          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" checked style="width:auto"> Sprzedaż i przychody</label>
-          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" checked style="width:auto"> Koszty i wydatki</label>
-          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" checked style="width:auto"> Zysk netto</label>
-          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" style="width:auto"> Podatki i limity</label>
-        </div>
+        <label>Typ raportu</label>
+        <select id="rpt_type">
+          <option value="roczny">Roczny — PIT-36 (działalność nierejestrowana)</option>
+          <option value="miesięczny">Miesięczny — ewidencja sprzedaży</option>
+        </select>
       </div>
-      <div style="display:flex;gap:8px"><button class="btn btn-primary" style="flex:1">📄 Generuj PDF</button><button class="btn btn-ghost" style="flex:1">📊 Eksport CSV</button></div>
+      <div class="form-group">
+        <label>Imię i nazwisko podatnika</label>
+        <input type="text" id="rpt_name" placeholder="np. Jan Kowalski">
+      </div>
+      <div class="form-group">
+        <label>PESEL</label>
+        <input type="text" id="rpt_pesel" placeholder="00000000000" maxlength="11">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:2" onclick="openTaxReport()">👁️ Podgląd raportu PDF</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="exportCSV()">📊 CSV</button>
+      </div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title">Podgląd raportu</div></div>
+      <div class="card-header"><div class="card-title">Podsumowanie finansowe</div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border2);border-radius:8px;overflow:hidden;margin-bottom:16px">
-        <div class="report-stat"><div class="report-stat-val" style="color:var(--purple-light)" id="rpt_income">0 zł</div><div class="report-stat-lbl">Przychód</div></div>
-        <div class="report-stat"><div class="report-stat-val" style="color:#f87171" id="rpt_costs">0 zł</div><div class="report-stat-lbl">Koszty</div></div>
-        <div class="report-stat"><div class="report-stat-val" style="color:#34d399" id="rpt_profit">0 zł</div><div class="report-stat-lbl">Zysk netto</div></div>
+        <div class="report-stat"><div class="report-stat-val" style="color:var(--purple-light)" id="rpt_income">0,00 zł</div><div class="report-stat-lbl">Przychód</div></div>
+        <div class="report-stat"><div class="report-stat-val" style="color:#f87171" id="rpt_costs">0,00 zł</div><div class="report-stat-lbl">Koszty</div></div>
+        <div class="report-stat"><div class="report-stat-val" style="color:#34d399" id="rpt_profit">0,00 zł</div><div class="report-stat-lbl">Zysk netto</div></div>
         <div class="report-stat"><div class="report-stat-val" id="rpt_sales">0</div><div class="report-stat-lbl">Sprzedaży</div></div>
       </div>
-      <div style="font-size:12px;color:var(--text3);text-align:center">Dodaj dane aby wygenerować raport</div>
+      <div style="font-size:12px;color:var(--text3)">
+        <div style="margin-bottom:4px">📋 <strong>Formularz PIT-36</strong> — działalność nierejestrowana (art. 20 ust. 1ba)</div>
+        <div style="margin-bottom:4px">📅 Termin złożenia: <strong>30 kwietnia roku następnego</strong></div>
+        <div>⚠️ Skala podatkowa: <strong>12%</strong> do 120 000 zł, <strong>32%</strong> powyżej</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PLANS PAGE ===== -->
+<section class="page" id="page-plans">
+  <div class="breadcrumb">Plany i subskrypcja</div>
+  <div style="max-width:900px">
+    <div style="margin-bottom:20px">
+      <div style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:6px">Wybierz plan dla siebie 🚀</div>
+      <div style="color:var(--text3);font-size:14px">Wszystkie plany zawierają synchronizację Vinted i ewidencję sprzedaży. Anuluj w dowolnym momencie.</div>
+    </div>
+    <div class="plans-grid">
+      <!-- FREE -->
+      <div class="plan-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">0 zł<span>/mies</span></div>
+        <div class="plan-perks">
+          <div class="plan-perk">✅ Do <b>50 transakcji/mies</b></div>
+          <div class="plan-perk">✅ Synchronizacja Vinted</div>
+          <div class="plan-perk">✅ Ewidencja sprzedaży</div>
+          <div class="plan-perk">✅ Kalkulator podatku</div>
+          <div class="plan-perk no">❌ Raporty PDF (PIT-36)</div>
+          <div class="plan-perk no">❌ Eksport CSV</div>
+          <div class="plan-perk no">❌ Skaner rynku</div>
+          <div class="plan-perk no">❌ Wsparcie priorytetowe</div>
+        </div>
+        <button class="btn btn-ghost plan-btn" id="planBtnFree" onclick="selectPlan('free')">Wybierz Free</button>
+      </div>
+      <!-- PRO -->
+      <div class="plan-card plan-popular">
+        <div class="plan-badge-top">⭐ Najpopularniejszy</div>
+        <div class="plan-name" style="color:var(--purple-light)">Pro</div>
+        <div class="plan-price" style="color:var(--purple-light)">29 zł<span>/mies</span></div>
+        <div class="plan-perks">
+          <div class="plan-perk">✅ Do <b>500 transakcji/mies</b></div>
+          <div class="plan-perk">✅ Synchronizacja Vinted</div>
+          <div class="plan-perk">✅ Pełna ewidencja</div>
+          <div class="plan-perk">✅ Raporty PDF <b>(PIT-36)</b></div>
+          <div class="plan-perk">✅ Eksport CSV</div>
+          <div class="plan-perk">✅ Skaner rynku</div>
+          <div class="plan-perk no">❌ Wiele platform (Etsy, eBay)</div>
+          <div class="plan-perk no">❌ Wsparcie priorytetowe 24/7</div>
+        </div>
+        <button class="btn btn-primary plan-btn" id="planBtnPro" onclick="selectPlan('pro')">Wybierz Pro — 29 zł/mies</button>
+      </div>
+      <!-- ULTRA -->
+      <div class="plan-card plan-ultra">
+        <div class="plan-badge-top" style="background:linear-gradient(135deg,#f59e0b,#d97706)">👑 Wszystko</div>
+        <div class="plan-name" style="color:#f59e0b">Ultra</div>
+        <div class="plan-price" style="color:#f59e0b">59 zł<span>/mies</span></div>
+        <div class="plan-perks">
+          <div class="plan-perk">✅ <b>Nieograniczone</b> transakcje</div>
+          <div class="plan-perk">✅ Vinted + Etsy + eBay + inne</div>
+          <div class="plan-perk">✅ Raporty PDF + ZUS + PIT-36</div>
+          <div class="plan-perk">✅ Eksport CSV / Excel</div>
+          <div class="plan-perk">✅ Skaner rynku + Prognozowanie</div>
+          <div class="plan-perk">✅ Planer wyprzedaży</div>
+          <div class="plan-perk">✅ Wsparcie priorytetowe 24/7</div>
+          <div class="plan-perk">✅ Wczesny dostęp do nowości</div>
+        </div>
+        <button class="btn plan-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;" id="planBtnUltra" onclick="selectPlan('ultra')">Wybierz Ultra — 59 zł/mies</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="card-header"><div class="card-title">Twój aktualny plan</div></div>
+      <div id="currentPlanInfo" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-size:28px" id="currentPlanIcon">🆓</div>
+        <div>
+          <div style="font-weight:800;font-size:16px" id="currentPlanName">Free</div>
+          <div style="font-size:13px;color:var(--text3)" id="currentPlanDesc">Podstawowy plan — bezpłatny</div>
+        </div>
+        <span class="current-plan-badge" id="currentPlanBadge">Aktywny</span>
+      </div>
     </div>
   </div>
 </section>
@@ -1408,6 +1542,70 @@ select option { background:var(--bg3); }
   </div>
 </div>
 
+
+<!-- EDIT SALE MODAL -->
+<div id="editSaleModal" class="edit-modal">
+  <div class="card" style="border:1px solid var(--border)">
+    <div class="card-header"><div class="card-title">✏️ Edytuj sprzedaż</div><span style="cursor:pointer;font-size:18px;color:var(--text3)" onclick="closeModal()">✕</span></div>
+    <input type="hidden" id="es_id">
+    <div class="grid-2" style="gap:12px;margin-bottom:0">
+      <div class="form-group"><label>Nazwa produktu</label><input type="text" id="es_name"></div>
+      <div class="form-group"><label>Platforma</label><select id="es_platform"><option>Vinted</option><option>Etsy</option><option>eBay</option><option>Inne</option></select></div>
+      <div class="form-group"><label>Cena (zł)</label><input type="number" id="es_price"></div>
+      <div class="form-group"><label>Koszt zakupu (zł)</label><input type="number" id="es_cost"></div>
+      <div class="form-group"><label>Koszt wysyłki (zł)</label><input type="number" id="es_ship"></div>
+      <div class="form-group"><label>Status</label><select id="es_status"><option>Sprzedane</option><option>Wysłane</option><option>Dostarczone</option><option>Zwrot</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Anuluj</button><button class="btn btn-primary" style="flex:2" onclick="saveSaleEdit()">Zapisz zmiany</button></div>
+  </div>
+</div>
+
+<!-- EDIT PRODUCT MODAL -->
+<div id="editProductModal" class="edit-modal">
+  <div class="card" style="border:1px solid var(--border)">
+    <div class="card-header"><div class="card-title">✏️ Edytuj produkt</div><span style="cursor:pointer;font-size:18px;color:var(--text3)" onclick="closeModal()">✕</span></div>
+    <input type="hidden" id="ep_id">
+    <div class="grid-2" style="gap:12px;margin-bottom:0">
+      <div class="form-group" style="grid-column:1/-1"><label>Nazwa produktu</label><input type="text" id="ep_name"></div>
+      <div class="form-group"><label>Cena zakupu (zł)</label><input type="number" id="ep_buy"></div>
+      <div class="form-group"><label>Cena sprzedaży (zł)</label><input type="number" id="ep_sell"></div>
+      <div class="form-group"><label>Kategoria</label><select id="ep_cat"><option>Ubrania</option><option>Buty</option><option>Akcesoria</option><option>Rękodzieło</option><option>Elektronika</option></select></div>
+      <div class="form-group"><label>Stan</label><select id="ep_state"><option value="dostępne">Dostępne</option><option value="w sprzedaży">W sprzedaży</option><option value="sprzedane">Sprzedane</option></select></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Tagi</label><input type="text" id="ep_tags"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Anuluj</button><button class="btn btn-primary" style="flex:2" onclick="saveProductEdit()">Zapisz zmiany</button></div>
+  </div>
+</div>
+
+<!-- EDIT COST MODAL -->
+<div id="editCostModal" class="edit-modal">
+  <div class="card" style="border:1px solid var(--border)">
+    <div class="card-header"><div class="card-title">✏️ Edytuj koszt</div><span style="cursor:pointer;font-size:18px;color:var(--text3)" onclick="closeModal()">✕</span></div>
+    <input type="hidden" id="ec_id">
+    <div class="form-group"><label>Nazwa kosztu</label><input type="text" id="ec_name"></div>
+    <div class="grid-2" style="gap:12px">
+      <div class="form-group"><label>Kwota (zł)</label><input type="number" id="ec_amount"></div>
+      <div class="form-group"><label>Kategoria</label><select id="ec_cat"><option>zakup</option><option>wysyłka</option><option>materiały</option><option>reklama</option><option>inne</option></select></div>
+    </div>
+    <div class="form-group"><label>Data</label><input type="date" id="ec_date"></div>
+    <div style="display:flex;gap:8px;margin-top:4px"><button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Anuluj</button><button class="btn btn-primary" style="flex:2" onclick="saveCostEdit()">Zapisz zmiany</button></div>
+  </div>
+</div>
+
+<!-- TAX PDF MODAL -->
+<div id="taxReportModal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);overflow-y:auto;padding:20px">
+  <div style="max-width:800px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:700;color:#fff">📄 Raport podatkowy — podgląd PDF</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="printTaxReport()">🖨️ Drukuj / Pobierz PDF</button>
+        <button class="btn btn-ghost" onclick="closeTaxReport()" style="color:#fff;border-color:rgba(255,255,255,.3)">✕ Zamknij</button>
+      </div>
+    </div>
+    <div id="taxReportContent" class="pdf-preview"></div>
+  </div>
+</div>
+
 <!-- ==================== JAVASCRIPT ==================== -->
 <script>
 // ===== STATE =====
@@ -1461,6 +1659,7 @@ function doLogin() {
   if (!account) {
     // Also allow demo login
     if (email === 'demo@allinone.pl' && pass === 'demo1234') {
+      appState.plan = 'ultra';
       loginSuccess({ first:'Demo', last:'User', email });
       return;
     }
@@ -1517,6 +1716,7 @@ function loginSuccess(user) {
 
   // Render existing data
   renderAll();
+  updatePlanUI();
 }
 
 function doLogout() {
@@ -1642,7 +1842,7 @@ function addCost() {
 function getAllSales() {
   const manual = (appState.sales || []);
   const synced = (appState.syncedData || []).map(r => ({
-    id:       'sync_' + r.date + '_' + r.product,
+    id:       'sync_' + (r.date||'') + '_' + (r.product||''),
     name:     r.product || '—',
     platform: r.platform || 'Vinted',
     price:    parseFloat(r.price) || 0,
@@ -1665,27 +1865,29 @@ function renderAll() {
   updateDashboard();
   updateTaxPage();
   updateReports();
-  updateStats();
 }
 
 function renderSales() {
   const tbody = document.getElementById('salesTableBody');
-  const all = getAllSales();
-  if (!all.length) {
-    tbody.innerHTML = '<tr class="table-empty"><td colspan="9">Brak sprzedaży. Kliknij <strong>+ Dodaj sprzedaż</strong> lub zsynchronizuj Vinted.</td></tr>';
+  if (!appState.sales.length) {
+    tbody.innerHTML = '<tr class="table-empty"><td colspan="10">Brak sprzedaży. Kliknij <strong>+ Dodaj sprzedaż</strong> lub zsynchronizuj Vinted.</td></tr>';
     return;
   }
-  tbody.innerHTML = all.map(s => `
+  tbody.innerHTML = appState.sales.map(s => `
     <tr>
       <td>${s.name}</td>
-      <td><span class="badge platform-${(s.platform||'vinted').toLowerCase()}">${s.platform||'Vinted'}</span></td>
+      <td><span class="badge platform-${(s.platform||'inne').toLowerCase()}">${s.platform}</span></td>
       <td>${s.price} zł</td>
-      <td>${s.cost || 0} zł</td>
-      <td>${s.comm || 0} zł</td>
-      <td>${s.ship || 0} zł</td>
+      <td>${s.cost||0} zł</td>
+      <td>${s.comm||0} zł</td>
+      <td>${s.ship||0} zł</td>
       <td style="color:${(s.profit||0)>=0?'#34d399':'#f87171'};font-weight:700">${(s.profit||0)>=0?'+':''}${s.profit||0} zł</td>
       <td><span class="badge ${statusBadge(s.status)}">${s.status}</span></td>
       <td>${s.date}</td>
+      <td style="white-space:nowrap">
+        <button onclick="openEditSale(${s.id})" style="background:none;border:none;cursor:pointer;color:var(--purple-light);font-size:14px;padding:2px 6px" title="Edytuj">✏️</button>
+        <button onclick="deleteSale(${s.id})" style="background:none;border:none;cursor:pointer;color:#f87171;font-size:14px;padding:2px 6px" title="Usuń">🗑️</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -1693,7 +1895,7 @@ function renderSales() {
 function renderProducts() {
   const tbody = document.getElementById('productsTableBody');
   if (!appState.products.length) {
-    tbody.innerHTML = '<tr class="table-empty"><td colspan="7">Brak produktów. Kliknij <strong>+ Nowy produkt</strong> aby dodać pierwszy.</td></tr>';
+    tbody.innerHTML = '<tr class="table-empty"><td colspan="8">Brak produktów. Kliknij <strong>+ Nowy produkt</strong> aby dodać pierwszy.</td></tr>';
     return;
   }
   tbody.innerHTML = appState.products.map(p => `
@@ -1704,7 +1906,11 @@ function renderProducts() {
       <td style="color:#34d399;font-weight:600">+${p.margin} zł (${p.buy>0?Math.round(p.margin/p.sell*100):0}%)</td>
       <td><span class="badge ${p.state==='sprzedane'?'badge-green':p.state==='w sprzedaży'?'badge-yellow':'badge-blue'}">${p.state}</span></td>
       <td>—</td>
-      <td>${p.tags.map(t=>`<span class="tag" style="font-size:10px;padding:2px 8px">${t}</span>`).join(' ')}</td>
+      <td>${(p.tags||[]).map(t=>`<span class="tag" style="font-size:10px;padding:2px 8px">${t}</span>`).join(' ')}</td>
+      <td style="white-space:nowrap">
+        <button onclick="openEditProduct(${p.id})" style="background:none;border:none;cursor:pointer;color:var(--purple-light);font-size:14px;padding:2px 6px" title="Edytuj">✏️</button>
+        <button onclick="deleteProduct(${p.id})" style="background:none;border:none;cursor:pointer;color:#f87171;font-size:14px;padding:2px 6px" title="Usuń">🗑️</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -1713,7 +1919,11 @@ function renderInventory() {
   const grid = document.getElementById('inventoryGrid');
   const icons = { Ubrania:'👔', Buty:'👟', Akcesoria:'👜', Rękodzieło:'✂️', Elektronika:'📱' };
   const cards = appState.products.map(p => `
-    <div class="inv-card">
+    <div class="inv-card" style="position:relative">
+      <div style="position:absolute;top:6px;right:6px;display:flex;gap:2px">
+        <button onclick="openEditProduct(${p.id})" style="background:rgba(124,58,237,.15);border:none;cursor:pointer;color:var(--purple-light);font-size:12px;padding:3px 6px;border-radius:6px" title="Edytuj">✏️</button>
+        <button onclick="deleteProduct(${p.id})" style="background:rgba(248,113,113,.15);border:none;cursor:pointer;color:#f87171;font-size:12px;padding:3px 6px;border-radius:6px" title="Usuń">🗑️</button>
+      </div>
       <div class="inv-img">${icons[p.cat]||'📦'}</div>
       <div class="inv-name">${p.name}</div>
       <div class="inv-price">${p.sell} zł</div>
@@ -1737,11 +1947,13 @@ function renderCosts() {
     el.innerHTML = '<div class="empty-state" style="padding:24px"><div class="empty-icon">💳</div><div class="empty-title">Brak kosztów</div><div class="empty-sub">Kliknij + Dodaj koszt aby zacząć śledzić wydatki</div></div>';
   } else {
     el.innerHTML = appState.costs.map(c => `
-      <div class="cost-item">
+      <div class="cost-item" style="display:flex;align-items:center;gap:8px">
         <span class="cost-cat-badge">${c.cat}</span>
-        <span class="cost-name">${c.name}</span>
+        <span class="cost-name" style="flex:1">${c.name}</span>
         <span class="cost-date">${c.date}</span>
         <span class="cost-amount">-${c.amount} zł</span>
+        <button onclick="openEditCost(${c.id})" style="background:none;border:none;cursor:pointer;color:var(--purple-light);font-size:14px;padding:2px 5px" title="Edytuj">✏️</button>
+        <button onclick="deleteCost(${c.id})" style="background:none;border:none;cursor:pointer;color:#f87171;font-size:14px;padding:2px 5px" title="Usuń">🗑️</button>
       </div>
     `).join('');
   }
@@ -1766,7 +1978,7 @@ function renderCosts() {
   const today = new Date().toLocaleDateString('pl-PL');
   const todayCosts = appState.costs.filter(c=>c.date===today).reduce((s,c)=>s+c.amount,0);
   const monthCosts = appState.costs.reduce((s,c)=>s+c.amount,0);
-  const income = appState.sales.reduce((s,x)=>s+x.price,0);
+  const income = getAllSales().reduce((s,x)=>s+(parseFloat(x.price)||0),0);
   document.getElementById('c_today').textContent = todayCosts + ' zł';
   document.getElementById('c_month').textContent = monthCosts + ' zł';
   document.getElementById('c_income').textContent = income + ' zł';
@@ -1778,140 +1990,32 @@ function updateDashboard() {
   const today = new Date().toLocaleDateString('pl-PL');
   const todayRev    = all.filter(s=>s.date===today).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
   const monthRev    = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-  const totalProfit = all.reduce((s,x)=>s+(parseFloat(x.profit)||0),0);
   const costTotal   = (appState.costs||[]).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
-
   document.getElementById('d_today').textContent  = todayRev.toFixed(2) + ' zł';
   document.getElementById('d_month').textContent  = monthRev.toFixed(2) + ' zł';
   document.getElementById('d_profit').textContent = (monthRev - costTotal).toFixed(2) + ' zł';
   document.getElementById('d_orders').textContent = all.length;
-
-  // Wykres — ostatnie 7 dni
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const label = d.toLocaleDateString('pl-PL');
-    const rev   = all.filter(s=>s.date===label).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-    days.push({ label, rev });
-  }
-  const maxRev = Math.max(...days.map(d=>d.rev), 1);
-  const chartWrap = document.getElementById('dashChartWrap');
-  if (days.some(d=>d.rev>0)) {
-    chartWrap.innerHTML = `
-      <div style="display:flex;align-items:flex-end;gap:6px;height:180px;padding:0 4px">
-        ${days.map((d,i)=>`
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-            <div style="font-size:10px;color:var(--text3)">${d.rev>0?d.rev.toFixed(0)+' zł':''}</div>
-            <div style="flex:1;width:100%;border-radius:6px 6px 0 0;background:var(--grad);opacity:${i===6?1:0.6};min-height:4px" 
-                 style2="height:${Math.round(d.rev/maxRev*100)}%"
-                 data-height="${Math.round(d.rev/maxRev*140)}px"></div>
-            <div style="font-size:10px;color:var(--text3)">${d.label.split('.').slice(0,2).join('.')}</div>
-          </div>
-        `).join('')}
-      </div>`;
-    // Ustaw wysokości słupków
-    chartWrap.querySelectorAll('[data-height]').forEach(el => {
-      el.style.height = el.getAttribute('data-height');
-    });
-  } else {
-    chartWrap.innerHTML = '<div class="empty-state" style="padding:32px 20px"><div class="empty-icon">📊</div><div class="empty-title">Brak danych do wykresu</div><div class="empty-sub">Zsynchronizuj Vinted lub dodaj sprzedaże</div></div>';
-  }
-
-  // Źródła sprzedaży — donut
-  const platforms = {};
-  all.forEach(s => { platforms[s.platform] = (platforms[s.platform]||0) + (parseFloat(s.price)||0); });
-  const platEntries = Object.entries(platforms).sort((a,b)=>b[1]-a[1]);
-  const platColors = { Vinted:'#09b46b', Etsy:'#f06432', eBay:'#0064d2', Inne:'#7c3aed' };
-  if (platEntries.length > 0) {
-    let deg = 0;
-    const segments = platEntries.map(([name,val]) => {
-      const pct = val / monthRev;
-      const seg = `${platColors[name]||'#9d5cf6'} ${deg}deg ${deg + pct*360}deg`;
-      deg += pct*360;
-      return { name, val, pct, color: platColors[name]||'#9d5cf6', seg };
-    });
-    const donutEl = document.getElementById('sourcesDonut');
-    if (donutEl) {
-      donutEl.innerHTML = `
-        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-          <div style="width:100px;height:100px;border-radius:50%;background:conic-gradient(${segments.map(s=>s.seg).join(',')});display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <div style="width:60px;height:60px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--text)">${all.length}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            ${segments.map(s=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px">
-              <div style="width:10px;height:10px;border-radius:50%;background:${s.color}"></div>
-              <span style="color:var(--text2)">${s.name}</span>
-              <strong style="color:var(--text)">${s.val.toFixed(0)} zł (${Math.round(s.pct*100)}%)</strong>
-            </div>`).join('')}
-          </div>
-        </div>`;
-    }
-  }
-
-  // Top produkty
-  const productMap = {};
-  all.forEach(s => {
-    if (!productMap[s.name]) productMap[s.name] = { name:s.name, revenue:0, count:0, platform:s.platform };
-    productMap[s.name].revenue += parseFloat(s.price)||0;
-    productMap[s.name].count++;
-  });
-  const topProds = Object.values(productMap).sort((a,b)=>b.revenue-a.revenue).slice(0,5);
-  const topEl = document.getElementById('topProductsList');
-  if (topEl) {
-    if (topProds.length) {
-      topEl.innerHTML = topProds.map((p,i)=>`
-        <div class="profit-item">
-          <div class="profit-item-rank">${i+1}</div>
-          <div class="profit-item-info">
-            <div class="profit-item-name">${p.name}</div>
-            <div class="profit-item-meta">${p.count}x sprzedane · ${p.platform}</div>
-          </div>
-          <div>
-            <div class="profit-amount">${p.revenue.toFixed(0)} zł</div>
-          </div>
-        </div>`).join('');
-    } else {
-      topEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-sub">Brak danych</div></div>';
-    }
-  }
-
-  // Prognoza
-  const forecastEl = document.getElementById('forecastValue');
-  if (forecastEl) {
-    const dayOfMonth = new Date().getDate();
-    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
-    const forecast = dayOfMonth > 0 ? Math.round(monthRev / dayOfMonth * daysInMonth) : 0;
-    forecastEl.textContent = forecast + ' zł';
-  }
+  const s_avg = document.getElementById('s_avg');
+  if (s_avg) s_avg.textContent = all.length ? Math.round(monthRev/all.length)+' zł' : '— zł';
+  const s_total = document.getElementById('s_total');
+  if (s_total) s_total.textContent = appState.products.length;
 }
 
 function updateTaxPage() {
   const all    = getAllSales();
   const income = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
   const costs  = (appState.costs||[]).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
-
-  // Podział miesięczny
-  const now = new Date();
-  const thisMonth = now.getMonth();
-  const thisYear  = now.getFullYear();
-  const monthIncome = all.filter(s => {
-    const parts = s.date.split('.');
-    if (parts.length < 3) return false;
-    const d = new Date(parts[2], parts[1]-1, parts[0]);
-    return d.getMonth()===thisMonth && d.getFullYear()===thisYear;
-  }).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-
-  document.getElementById('tax_month').textContent = monthIncome.toFixed(2) + ' zł';
-  document.getElementById('tax_year').textContent  = income.toFixed(2) + ' zł';
-  document.getElementById('taxIncome').value       = income.toFixed(2);
-  document.getElementById('taxCosts').value        = costs.toFixed(2);
+  document.getElementById('tax_month').textContent = income + ' zł';
+  document.getElementById('tax_year').textContent  = income + ' zł';
+  document.getElementById('taxIncome').value       = income;
+  document.getElementById('taxCosts').value        = costs;
   calcTax();
-
+  // Limit bar
   const limit = appState.taxLimit || 3499;
-  const pct   = Math.min(Math.round(monthIncome/limit*100), 100);
-  document.getElementById('limitBar').style.width     = pct + '%';
-  document.getElementById('limitCurrent').textContent = monthIncome.toFixed(2) + ' zł';
-  document.getElementById('limitLeft').textContent    = Math.max(0, limit - monthIncome).toFixed(2) + ' zł';
+  const pct   = Math.min(Math.round(income/limit*100), 100);
+  document.getElementById('limitBar').style.width    = pct + '%';
+  document.getElementById('limitCurrent').textContent= income + ' zł';
+  document.getElementById('limitLeft').textContent   = Math.max(0, limit - income) + ' zł';
   const badge = document.getElementById('limitBadge');
   const alert = document.getElementById('limitAlert');
   if (pct >= 100) {
@@ -1919,7 +2023,7 @@ function updateTaxPage() {
     alert.className = 'alert-box alert-red'; alert.textContent = '🔴 Przekroczono limit działalności nierejestrowanej! Skonsultuj się z księgowym.';
   } else if (pct >= 80) {
     badge.className = 'badge badge-yellow'; badge.textContent = '🟡 Blisko limitu';
-    alert.className = 'alert-box alert-yellow'; alert.textContent = `🟡 Blisko limitu! Zostało Ci tylko ${(limit-monthIncome).toFixed(2)} zł. Rozważ rejestrację działalności.`;
+    alert.className = 'alert-box alert-yellow'; alert.textContent = `🟡 Blisko limitu! Zostało Ci tylko ${limit-income} zł. Rozważ rejestrację działalności.`;
   } else {
     badge.className = 'badge badge-green'; badge.textContent = '🟢 OK';
     alert.className = 'alert-box alert-green'; alert.textContent = `🟢 Bezpiecznie — jesteś poniżej limitu działalności nierejestrowanej.`;
@@ -1934,15 +2038,6 @@ function updateReports() {
   document.getElementById('rpt_costs').textContent  = costs.toFixed(2) + ' zł';
   document.getElementById('rpt_profit').textContent = (income-costs).toFixed(2) + ' zł';
   document.getElementById('rpt_sales').textContent  = all.length;
-}
-
-function updateStats() {
-  const all = getAllSales();
-  const income = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-  const avgEl = document.getElementById('s_avg');
-  const totalEl = document.getElementById('s_total');
-  if (avgEl) avgEl.textContent = all.length ? (income/all.length).toFixed(0)+' zł' : '— zł';
-  if (totalEl) totalEl.textContent = appState.products.length + all.length;
 }
 
 // ===== TAX CALC =====
@@ -2102,8 +2197,6 @@ async function syncFromSheets() {
     document.getElementById('st3').textContent = '✓ Połączono';
     document.getElementById('st3').className = 'badge badge-green';
     showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień z Vinted!`, 'success');
-    // Odśwież wszystkie zakładki z nowymi danymi
-    renderAll();
   } catch(e) {
     showSyncStatus('❌ ' + e.message, 'error');
     console.error('Błąd sync:', e);
@@ -2213,7 +2306,407 @@ window.addEventListener('load', () => {
     updateSyncStats(appState.syncedData);
   }
 });
+
+// ===== PLANS SYSTEM =====
+const PLANS = {
+  free:  { name:'Free',  icon:'🆓', price:'0 zł/mies',  desc:'Podstawowy plan — bezpłatny', color:'var(--text)' },
+  pro:   { name:'Pro',   icon:'⭐', price:'29 zł/mies', desc:'Dla aktywnych sprzedawców', color:'var(--purple-light)' },
+  ultra: { name:'Ultra', icon:'👑', price:'59 zł/mies', desc:'Wszystko bez limitów', color:'#f59e0b' },
+};
+
+function getPlan() {
+  if (appState.user && appState.user.email === 'demo@allinone.pl') return 'ultra';
+  return appState.plan || 'free';
+}
+
+function selectPlan(plan) {
+  if (plan === getPlan()) return;
+  if (plan === 'free') {
+    appState.plan = 'free';
+    saveState();
+    updatePlanUI();
+    showToast('Plan zmieniony na Free');
+    return;
+  }
+  showToast('W wersji demo — plan ' + PLANS[plan].name + ' aktywowany! 🎉');
+  appState.plan = plan;
+  saveState();
+  updatePlanUI();
+}
+
+function updatePlanUI() {
+  const plan = getPlan();
+  const p = PLANS[plan];
+  const nameEl = document.getElementById('currentPlanName');
+  const descEl = document.getElementById('currentPlanDesc');
+  const iconEl = document.getElementById('currentPlanIcon');
+  if (nameEl) nameEl.textContent = p.name;
+  if (descEl) descEl.textContent = p.price + ' — ' + p.desc;
+  if (iconEl) iconEl.textContent = p.icon;
+  // Highlight active plan button
+  ['free','pro','ultra'].forEach(k => {
+    const btn = document.getElementById('planBtn' + k.charAt(0).toUpperCase() + k.slice(1));
+    if (btn) {
+      if (k === plan) {
+        btn.innerHTML = '✅ Aktualny plan';
+        btn.disabled = true;
+      }
+    }
+  });
+  // Show plan badge in sidebar
+  const sidebarBadge = document.getElementById('sidebarPlanBadge');
+  if (sidebarBadge) {
+    sidebarBadge.textContent = p.icon + ' ' + p.name;
+    sidebarBadge.style.color = p.color;
+  }
+}
+
+// ===== DELETE FUNCTIONS =====
+function deleteSale(id) {
+  if (!confirm('Usunąć tę sprzedaż?')) return;
+  appState.sales = appState.sales.filter(s => s.id !== id);
+  saveState(); renderAll();
+  showToast('Sprzedaż usunięta');
+}
+
+function deleteProduct(id) {
+  if (!confirm('Usunąć ten produkt z magazynu?')) return;
+  appState.products = appState.products.filter(p => p.id !== id);
+  saveState(); renderAll();
+  showToast('Produkt usunięty');
+}
+
+function deleteCost(id) {
+  if (!confirm('Usunąć ten koszt?')) return;
+  appState.costs = appState.costs.filter(c => c.id !== id);
+  saveState(); renderAll();
+  showToast('Koszt usunięty');
+}
+
+// ===== EDIT FUNCTIONS =====
+function openEditSale(id) {
+  const s = appState.sales.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('es_id').value = s.id;
+  document.getElementById('es_name').value = s.name;
+  document.getElementById('es_platform').value = s.platform;
+  document.getElementById('es_price').value = s.price;
+  document.getElementById('es_cost').value = s.cost || 0;
+  document.getElementById('es_ship').value = s.ship || 0;
+  document.getElementById('es_status').value = s.status;
+  openModal('editSaleModal');
+}
+
+function saveSaleEdit() {
+  const id = parseInt(document.getElementById('es_id').value);
+  const idx = appState.sales.findIndex(s => s.id === id);
+  if (idx < 0) return;
+  const price  = parseFloat(document.getElementById('es_price').value) || 0;
+  const cost   = parseFloat(document.getElementById('es_cost').value) || 0;
+  const ship   = parseFloat(document.getElementById('es_ship').value) || 0;
+  const platform = document.getElementById('es_platform').value;
+  const commRates = { Vinted:0.05, Etsy:0.085, eBay:0.12, Inne:0 };
+  const comm = Math.round(price * (commRates[platform] || 0));
+  appState.sales[idx] = {
+    ...appState.sales[idx],
+    name: document.getElementById('es_name').value.trim(),
+    platform, price, cost, ship, comm,
+    profit: price - cost - ship - comm,
+    status: document.getElementById('es_status').value,
+  };
+  saveState(); renderAll(); closeModal();
+  showToast('Sprzedaż zaktualizowana ✅');
+}
+
+function openEditProduct(id) {
+  const p = appState.products.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('ep_id').value = p.id;
+  document.getElementById('ep_name').value = p.name;
+  document.getElementById('ep_buy').value = p.buy;
+  document.getElementById('ep_sell').value = p.sell;
+  document.getElementById('ep_cat').value = p.cat;
+  document.getElementById('ep_state').value = p.state;
+  document.getElementById('ep_tags').value = (p.tags||[]).join(', ');
+  openModal('editProductModal');
+}
+
+function saveProductEdit() {
+  const id = parseInt(document.getElementById('ep_id').value);
+  const idx = appState.products.findIndex(p => p.id === id);
+  if (idx < 0) return;
+  const buy  = parseFloat(document.getElementById('ep_buy').value) || 0;
+  const sell = parseFloat(document.getElementById('ep_sell').value) || 0;
+  appState.products[idx] = {
+    ...appState.products[idx],
+    name:   document.getElementById('ep_name').value.trim(),
+    buy, sell,
+    margin: sell - buy,
+    cat:    document.getElementById('ep_cat').value,
+    state:  document.getElementById('ep_state').value,
+    tags:   document.getElementById('ep_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+  };
+  saveState(); renderAll(); closeModal();
+  showToast('Produkt zaktualizowany ✅');
+}
+
+function openEditCost(id) {
+  const c = appState.costs.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('ec_id').value = c.id;
+  document.getElementById('ec_name').value = c.name;
+  document.getElementById('ec_amount').value = c.amount;
+  document.getElementById('ec_cat').value = c.cat;
+  // Parse date dd.mm.yyyy → yyyy-mm-dd
+  const parts = c.date.split('.');
+  if (parts.length === 3) document.getElementById('ec_date').value = parts[2]+'-'+parts[1]+'-'+parts[0];
+  openModal('editCostModal');
+}
+
+function saveCostEdit() {
+  const id = parseInt(document.getElementById('ec_id').value);
+  const idx = appState.costs.findIndex(c => c.id === id);
+  if (idx < 0) return;
+  const dateVal = document.getElementById('ec_date').value;
+  appState.costs[idx] = {
+    ...appState.costs[idx],
+    name:   document.getElementById('ec_name').value.trim(),
+    amount: parseFloat(document.getElementById('ec_amount').value) || 0,
+    cat:    document.getElementById('ec_cat').value,
+    date:   dateVal ? new Date(dateVal).toLocaleDateString('pl-PL') : appState.costs[idx].date,
+  };
+  saveState(); renderAll(); closeModal();
+  showToast('Koszt zaktualizowany ✅');
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  let t = document.getElementById('toastEl');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastEl';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--grad);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;transition:opacity .4s;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+// ===== TAX REPORT PDF =====
+function openTaxReport() {
+  const year     = document.getElementById('rpt_year')?.value || new Date().getFullYear()-1;
+  const all      = getAllSales ? getAllSales() : (appState.sales||[]);
+  const costs    = appState.costs||[];
+  const userName = document.getElementById('rpt_name')?.value || (appState.user ? appState.user.first+' '+appState.user.last : '');
+  const pesel    = document.getElementById('rpt_pesel')?.value || '—';
+
+  // Filter by year
+  const ySales = all.filter(s => {
+    const parts = (s.date||'').split('.');
+    return parts.length === 3 && parts[2] == year;
+  });
+  const yCosts = costs.filter(c => {
+    const parts = (c.date||'').split('.');
+    return parts.length === 3 && parts[2] == year;
+  });
+
+  const income    = ySales.reduce((s,x)=>s+(parseFloat(x.price)||0), 0);
+  const totalCost = yCosts.reduce((s,c)=>s+(parseFloat(c.amount)||0), 0);
+  const dochod    = income - totalCost;
+  const limit2025 = 3499.50 * 12; // roczny
+  const pctLimit  = Math.min(Math.round(income/limit2025*100), 200);
+  const taxBase   = Math.max(0, dochod);
+  const taxAmt    = taxBase <= 120000 ? taxBase * 0.12 : 120000*0.12 + (taxBase-120000)*0.32;
+  const kup       = 30 * 12; // koszty uzyskania uproszczone
+
+  // Build monthly breakdown
+  const months = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+  const monthlyRows = months.map((m,i) => {
+    const mi = i+1;
+    const mIncome = ySales.filter(s => {
+      const p = (s.date||'').split('.');
+      return parseInt(p[1])===mi;
+    }).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+    const mCosts = yCosts.filter(c => {
+      const p = (c.date||'').split('.');
+      return parseInt(p[1])===mi;
+    }).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+    const withinLimit = mIncome <= 3499.50 ? '✅' : '⚠️';
+    return `<tr>
+      <td>${m}</td>
+      <td>${mIncome.toFixed(2)} zł</td>
+      <td>${mCosts.toFixed(2)} zł</td>
+      <td style="color:${mIncome-mCosts>=0?'#16a34a':'#dc2626'}">${(mIncome-mCosts).toFixed(2)} zł</td>
+      <td style="text-align:center">${withinLimit} ${mIncome.toFixed(2)} / 3499,50 zł</td>
+    </tr>`;
+  }).join('');
+
+  const salesRows = ySales.slice(0,50).map((s,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${s.date||'—'}</td>
+      <td>${s.name||'—'}</td>
+      <td>${s.platform||'—'}</td>
+      <td>${(parseFloat(s.price)||0).toFixed(2)} zł</td>
+      <td>${s.buyer||'—'}</td>
+    </tr>`).join('');
+
+  const costRows = yCosts.map((c,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${c.date||'—'}</td>
+      <td>${c.name||'—'}</td>
+      <td>${c.cat||'—'}</td>
+      <td>${(parseFloat(c.amount)||0).toFixed(2)} zł</td>
+    </tr>`).join('');
+
+  const html = `
+    <div class="pdf-header">
+      <div>
+        <h1>Raport podatkowy — Działalność nierejestrowana</h1>
+        <div style="font-size:12px;color:#555">Rok podatkowy: <strong>${year}</strong> &nbsp;|&nbsp; Formularz: <strong>PIT-36 (wiersz 9, poz. 132-133)</strong></div>
+        <div style="font-size:12px;color:#555">art. 20 ust. 1ba ustawy o PIT — inne źródła przychodów</div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#555">
+        <div>Wygenerowano: <strong>${new Date().toLocaleDateString('pl-PL')}</strong></div>
+        <div>Wersja: AllInOne v3</div>
+      </div>
+    </div>
+
+    <h2>1. Dane podatnika</h2>
+    <table>
+      <tr><th style="width:200px">Imię i nazwisko</th><td><strong>${userName||'—'}</strong></td></tr>
+      <tr><th>PESEL</th><td>${pesel}</td></tr>
+      <tr><th>Rok podatkowy</th><td>${year}</td></tr>
+      <tr><th>Podstawa prawna</th><td>art. 20 ust. 1ba ustawy z dnia 26 lipca 1991 r. o podatku dochodowym od osób fizycznych</td></tr>
+      <tr><th>Formularz PIT</th><td>PIT-36 — część D.1., wiersz 9 „Działalność nierejestrowana"</td></tr>
+      <tr><th>Termin złożenia</th><td>30 kwietnia ${parseInt(year)+1} r.</td></tr>
+    </table>
+
+    <h2>2. Podsumowanie finansowe — poz. PIT-36</h2>
+    <table>
+      <tr class="sum-row"><th>Pozycja</th><th>Kwota</th><th>Poz. PIT-36</th></tr>
+      <tr><td>Przychód z działalności nierejestrowanej</td><td><strong>${income.toFixed(2)} zł</strong></td><td>poz. 132</td></tr>
+      <tr><td>Koszty uzyskania przychodów</td><td><strong>${totalCost.toFixed(2)} zł</strong></td><td>poz. 133</td></tr>
+      <tr class="sum-row"><td><strong>Dochód (poz. 132 – poz. 133)</strong></td><td><strong>${Math.max(0,dochod).toFixed(2)} zł</strong></td><td>poz. 134</td></tr>
+      <tr><td>Strata (jeśli koszty > przychody)</td><td>${dochod<0?Math.abs(dochod).toFixed(2)+' zł':'—'}</td><td>poz. 135</td></tr>
+    </table>
+
+    <div class="info-box">
+      📋 <strong>Uwaga:</strong> Zaliczki na podatek dochodowy w przypadku działalności nierejestrowanej <strong>nie są opłacane w trakcie roku</strong> — podatek rozliczany jest wyłącznie w zeznaniu rocznym PIT-36.
+    </div>
+
+    <h2>3. Obliczenie podatku (skala podatkowa)</h2>
+    <table>
+      <tr><th>Podstawa opodatkowania (dochód)</th><td>${Math.max(0,dochod).toFixed(2)} zł</td></tr>
+      <tr><td>Stawka podatku</td><td>${dochod<=120000?'12%':'12% do 120 000 zł + 32% powyżej'}</td></tr>
+      <tr class="sum-row"><td><strong>Szacunkowy podatek do zapłaty</strong></td><td><strong>${taxAmt.toFixed(2)} zł</strong></td></tr>
+      <tr><td>Kwota wolna od podatku</td><td>30 000,00 zł</td></tr>
+      <tr class="sum-row"><td><strong>Podatek po odliczeniu kwoty wolnej</strong></td><td><strong>${Math.max(0, taxAmt - 3600).toFixed(2)} zł</strong></td></tr>
+    </table>
+
+    <div class="${pctLimit >= 100 ? 'warn-box' : 'info-box'}">
+      ${pctLimit >= 100
+        ? '⚠️ <strong>UWAGA:</strong> Przekroczono roczny limit działalności nierejestrowanej! Wymagana rejestracja w CEIDG.'
+        : '✅ Przychód roczny ' + income.toFixed(2) + ' zł mieści się w limicie działalności nierejestrowanej (' + limit2025.toFixed(2) + ' zł/rok). Brak obowiązku rejestracji działalności.'}
+    </div>
+
+    <h2>4. Składki ZUS</h2>
+    <table>
+      <tr><td>Obowiązkowe składki ZUS</td><td><strong>Nie dotyczą</strong> — działalność nierejestrowana nie podlega obowiązkowym składkom ZUS</td></tr>
+      <tr><td>Dobrowolne ubezpieczenie zdrowotne</td><td>Możliwe jeśli brak innego tytułu ubezpieczenia (np. umowy o pracę)</td></tr>
+      <tr><td>Składka zdrowotna dobrowolna 2025</td><td>Ustalana indywidualnie z ZUS</td></tr>
+    </table>
+    <div class="info-box">ℹ️ Prowadząc wyłącznie działalność nierejestrowaną bez umowy o pracę ani zlecenia, możesz dobrowolnie zgłosić się do ubezpieczenia zdrowotnego w ZUS (formularz ZZA).</div>
+
+    <h2>5. Ewidencja sprzedaży miesięcznej (wymagana art. 17 Prawa Przedsiębiorców)</h2>
+    <table>
+      <tr><th>Miesiąc</th><th>Przychód</th><th>Koszty</th><th>Zysk</th><th>Status limitu</th></tr>
+      ${monthlyRows}
+      <tr class="sum-row"><td><strong>RAZEM</strong></td><td><strong>${income.toFixed(2)} zł</strong></td><td><strong>${totalCost.toFixed(2)} zł</strong></td><td><strong>${dochod.toFixed(2)} zł</strong></td><td></td></tr>
+    </table>
+
+    <h2>6. Szczegółowa ewidencja przychodów${ySales.length > 50 ? ' (pierwsze 50 z '+ySales.length+')' : ''}</h2>
+    ${ySales.length > 0 ? `
+    <table>
+      <tr><th>#</th><th>Data</th><th>Opis towaru/usługi</th><th>Platforma</th><th>Kwota</th><th>Nabywca</th></tr>
+      ${salesRows}
+      <tr class="sum-row"><td colspan="4"><strong>SUMA PRZYCHODÓW</strong></td><td><strong>${income.toFixed(2)} zł</strong></td><td></td></tr>
+    </table>` : '<p style="color:#888;font-size:12px">Brak transakcji w roku '+year+'</p>'}
+
+    <h2>7. Ewidencja kosztów uzyskania przychodów</h2>
+    ${yCosts.length > 0 ? `
+    <table>
+      <tr><th>#</th><th>Data</th><th>Opis kosztu</th><th>Kategoria</th><th>Kwota</th></tr>
+      ${costRows}
+      <tr class="sum-row"><td colspan="4"><strong>SUMA KOSZTÓW</strong></td><td><strong>${totalCost.toFixed(2)} zł</strong></td></tr>
+    </table>` : '<p style="color:#888;font-size:12px">Brak zaewidencjonowanych kosztów</p>'}
+
+    <h2>8. Informacje prawne i terminy</h2>
+    <table>
+      <tr><th>Termin złożenia PIT-36</th><td>15 lutego – 30 kwietnia ${parseInt(year)+1} r.</td></tr>
+      <tr><th>Sposób złożenia</th><td>Elektronicznie (e-Urząd Skarbowy, Twój e-PIT) lub papierowo w US</td></tr>
+      <tr><th>Limit działalności (2025)</th><td>3 499,50 zł/miesiąc (75% minimalnego wynagrodzenia)</td></tr>
+      <tr><th>Podstawa prawna</th><td>art. 5 ust. 1 ustawy Prawo Przedsiębiorców; art. 20 ust. 1ba ustawy o PIT</td></tr>
+      <tr><th>Rejestr sprzedaży</th><td>Obowiązkowa uproszczona ewidencja (papierowa lub elektroniczna)</td></tr>
+      <tr><th>Rachunki/faktury</th><td>Obowiązkowe na żądanie klienta (w ciągu 3 miesięcy od zakupu)</td></tr>
+    </table>
+
+    <div class="warn-box" style="margin-top:20px">
+      ⚠️ <strong>Zastrzeżenie:</strong> Niniejszy raport ma charakter informacyjny i pomocniczy. Nie stanowi porady prawnej ani podatkowej. Przed złożeniem zeznania PIT-36 zaleca się konsultację z doradcą podatkowym lub księgowym. Wygenerowany raport nie zastępuje oficjalnych formularzy podatkowych.
+    </div>
+
+    <div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid #e0d9fa;font-size:11px;color:#888">
+      Wygenerowano przez AllInOne — centrum sprzedaży online &nbsp;|&nbsp; ${new Date().toLocaleString('pl-PL')}
+    </div>
+  `;
+
+  document.getElementById('taxReportContent').innerHTML = html;
+  document.getElementById('taxReportModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTaxReport() {
+  document.getElementById('taxReportModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function printTaxReport() {
+  const content = document.getElementById('taxReportContent').innerHTML;
+  const win = window.open('', '_blank', 'width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html><head><title>Raport Podatkowy AllInOne</title>
+    <style>
+      body { font-family: 'DM Sans', Arial, sans-serif; font-size:13px; line-height:1.6; color:#111; margin:0; padding:32px; }
+      h1 { font-size:20px; font-weight:800; margin:0 0 4px; color:#1a1a2e; }
+      h2 { font-size:14px; font-weight:700; margin:20px 0 8px; color:#1a1a2e; border-bottom:2px solid #7c3aed; padding-bottom:4px; }
+      .pdf-header { display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:3px solid #7c3aed; padding-bottom:16px; }
+      table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:12px; }
+      th { background:#f5f3ff; color:#1a1a2e; font-weight:700; padding:6px 8px; text-align:left; border:1px solid #e0d9fa; }
+      td { padding:5px 8px; border:1px solid #ede9fe; }
+      tr:nth-child(even) td { background:#faf9ff; }
+      .sum-row td { font-weight:700; background:#f5f3ff; }
+      .info-box { background:#f5f3ff; border-left:4px solid #7c3aed; padding:10px 14px; border-radius:0 6px 6px 0; font-size:12px; margin:8px 0; }
+      .warn-box { background:#fff7ed; border-left:4px solid #f59e0b; padding:10px 14px; border-radius:0 6px 6px 0; font-size:12px; margin:8px 0; }
+      @page { size:A4; margin:20mm; }
+    </style></head><body>${content}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 500);
+}
+
+function exportCSV() {
+  const all = getAllSales ? getAllSales() : (appState.sales||[]);
+  const rows = [['Data','Produkt','Platforma','Cena','Kupujący','Status']];
+  all.forEach(s => rows.push([s.date,s.name,s.platform,s.price,s.buyer||'—',s.status]));
+  const csv = rows.map(r => r.map(v => '"'+(v||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = 'allinone_sprzedaz_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
 </script>
 </body>
 </html>
-
