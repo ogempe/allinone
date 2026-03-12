@@ -568,7 +568,25 @@ select option { background:var(--bg3); }
 .wizard-desc { font-size:14px; color:var(--text2); line-height:1.7; margin-bottom:20px; }
 .wizard-actions { display:flex; gap:10px; }
 
-/* ===== GHOST PLACEHOLDERS ===== */
+/* ===== LIVE SYNC PULSE ===== */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+.live-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; background: #34d399;
+  animation: pulse 2s infinite; margin-right: 6px;
+}
+
+/* ===== DASHBOARD SYNC BANNER ===== */
+.sync-live-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25);
+  color: #34d399; border-radius: 99px; padding: 3px 10px;
+  font-size: 11px; font-weight: 700;
+}
+
 .ghost-chart { background:linear-gradient(90deg,var(--bg4) 25%,var(--bg3) 50%,var(--bg4) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
@@ -761,7 +779,7 @@ select option { background:var(--bg3); }
   <div class="topbar-actions">
     <div class="search-wrap">
       <span class="search-icon">🔎</span>
-      <input type="text" placeholder="Szukaj..." data-i18n-placeholder="search_placeholder">
+      <input type="text" placeholder="Szukaj..." data-i18n-placeholder="search_placeholder" oninput="debounce(handleSearch, 300)(this.value)">
     </div>
     <div class="dropdown">
       <div class="lang-btn" onclick="toggleDropdown('langMenu')">🌐 <span id="langLabel">PL</span> ▾</div>
@@ -786,7 +804,10 @@ select option { background:var(--bg3); }
 
 <!-- ===== DASHBOARD ===== -->
 <section class="page active" id="page-dashboard">
-  <div class="breadcrumb"><span data-i18n="nav_dashboard">Dashboard</span></div>
+  <div class="breadcrumb" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <span data-i18n="nav_dashboard">Dashboard</span>
+    <span class="sync-live-badge" id="dashSyncBadge" style="display:none">🟢 Live</span>
+  </div>
 
   <!-- LIMIT BANNER -->
   <div id="limitBanner" style="display:none;background:linear-gradient(90deg,rgba(245,158,11,.15),rgba(239,68,68,.1));border:1px solid rgba(245,158,11,.4);border-radius:12px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
@@ -889,7 +910,10 @@ select option { background:var(--bg3); }
   <div class="card">
     <div class="card-header">
       <div class="card-title">📋 Ostatnie sprzedaże</div>
-      <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="showPage('sales',document.querySelector('.nav-item'))">Zobacz wszystkie →</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="dashVintedCount" style="font-size:11px;color:var(--text3)"></span>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="showPage('sales',document.querySelector('.nav-item'))">Zobacz wszystkie →</button>
+      </div>
     </div>
     <div class="table-wrap">
       <table>
@@ -1809,6 +1833,10 @@ function loginSuccess(user) {
   // Render existing data
   renderAll();
   updatePlanUI();
+  // Start auto-refresh from Sheets
+  startAutoRefresh();
+  // Update sync timestamp in dashboard
+  _updateLastSyncUI();
   // Show wizard for new users
   if (!appState.wizardDone && !appState.syncedData?.length) {
     setTimeout(() => showWizard(), 600);
@@ -1818,6 +1846,7 @@ function loginSuccess(user) {
 }
 
 function doLogout() {
+  stopAutoRefresh();
   appState.user = null;
   saveState();
   document.getElementById('app').classList.remove('active');
@@ -1903,7 +1932,8 @@ function addSale() {
   const profit= price - cost - ship - comm;
   const sale  = { id: Date.now(), name, platform, price, cost, ship, comm, profit, status, date: new Date().toLocaleDateString('pl-PL') };
   appState.sales.unshift(sale);
-  saveState(); renderAll(); closeModal();
+  saveState(); markDirty('sales'); closeModal();
+  showToast('✅ Sprzedaż dodana: ' + name);
   // Clear
   ['s_name','s_price','s_cost','s_ship'].forEach(id => document.getElementById(id).value = '');
 }
@@ -1919,7 +1949,7 @@ function addProduct() {
   if (!name) { alert('Podaj nazwę produktu'); return; }
   const product = { id: Date.now(), name, buy, sell, cat, state, tags, margin: sell - buy };
   appState.products.unshift(product);
-  saveState(); renderAll(); closeModal();
+  saveState(); markDirty('products'); closeModal();
   ['p_name','p_buy','p_sell','p_tags'].forEach(id => document.getElementById(id).value = '');
 }
 
@@ -1932,7 +1962,7 @@ function addCost() {
   if (!name) { alert('Podaj nazwę kosztu'); return; }
   const cost = { id: Date.now(), name, amount, cat, date: date ? new Date(date).toLocaleDateString('pl-PL') : new Date().toLocaleDateString('pl-PL') };
   appState.costs.unshift(cost);
-  saveState(); renderAll(); closeModal();
+  saveState(); markDirty('costs'); closeModal();
   document.getElementById('cost_name').value = '';
   document.getElementById('cost_amount').value = '';
 }
@@ -1955,7 +1985,54 @@ function getAllSales() {
   return [...manual, ...synced];
 }
 
-// ===== RENDER ALL =====
+// ===== SELECTIVE RENDER SYSTEM =====
+// Only re-render what's actually visible + what changed
+let _renderScheduled = false;
+let _dirtyPages = new Set();
+
+function markDirty(...pages) {
+  pages.forEach(p => _dirtyPages.add(p));
+  if (!_renderScheduled) {
+    _renderScheduled = true;
+    requestAnimationFrame(() => {
+      _renderScheduled = false;
+      _flushRender();
+    });
+  }
+}
+
+function _flushRender() {
+  const active = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
+  // Always update active page + dashboard stats
+  if (_dirtyPages.has('sales') || _dirtyPages.has('all')) {
+    renderSales();
+    updateDashboard();
+    updateReports();
+    updateStats();
+    updateYearPage();
+    updateTaxPage();
+  }
+  if (_dirtyPages.has('products') || _dirtyPages.has('all')) {
+    renderProducts();
+    renderInventory();
+  }
+  if (_dirtyPages.has('costs') || _dirtyPages.has('all')) {
+    renderCosts();
+    updateTaxPage();
+    updateReports();
+    updateDashboard();
+  }
+  if (_dirtyPages.has('sync') || _dirtyPages.has('all')) {
+    updateDashboard();
+    renderSales();
+    updateReports();
+    updateStats();
+    updateYearPage();
+    updateTaxPage();
+  }
+  _dirtyPages.clear();
+}
+
 function renderAll() {
   renderSales();
   renderProducts();
@@ -2111,7 +2188,7 @@ function renderDashChart() {
       const isToday = b.label === ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][now.getDay()];
       return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;cursor:default" title="${b.rev} zł">
         ${b.rev > 0 ? `<div style="font-size:9px;color:var(--text3)">${b.rev} zł</div>` : ''}
-        <div style="width:100%;border-radius:4px 4px 0 0;background:${isToday ? 'var(--grad)' : 'var(--purple)'};opacity:${b.rev>0?1:0.2};transition:height .3s" data-pct="${pct}" style="height:${Math.max(pct,2)}%"></div>
+        <div style="width:100%;border-radius:4px 4px 0 0;background:${isToday ? 'var(--grad)' : 'var(--purple)'};opacity:${b.rev>0?1:0.2};transition:height .4s ease;height:${Math.max(pct,2)}%" data-pct="${pct}"></div>
         <div style="font-size:10px;color:${isToday?'var(--purple-light)':'var(--text3)'};white-space:nowrap">${b.label}</div>
       </div>`;
     }).join('') +
@@ -2241,9 +2318,19 @@ function renderRecentSales(all) {
     const da = parseDate(a.date)||new Date(0);
     const db = parseDate(b.date)||new Date(0);
     return db-da;
-  }).slice(0,8);
+  }).slice(0,10);
+  // Update Vinted count badge
+  const vintedCount = (appState.syncedData||[]).length;
+  const countEl = document.getElementById('dashVintedCount');
+  if (countEl) {
+    if (vintedCount > 0) {
+      countEl.innerHTML = `<span class="sync-live-badge">🟢 ${vintedCount} z Vinted</span>`;
+    } else {
+      countEl.innerHTML = `<span style="color:var(--text3);font-size:11px">⚪ Brak danych Vinted — <a onclick="showPage('sync',document.querySelector('.nav-item'))" style="color:var(--purple-light);cursor:pointer">synchronizuj →</a></span>`;
+    }
+  }
   if (!recent.length) {
-    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Brak sprzedaży — synchronizuj Vinted lub dodaj ręcznie</td></tr>';
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Brak sprzedaży — <span onclick="showPage(\'sync\',document.querySelector(\'.nav-item\'))" style="color:var(--purple-light);cursor:pointer">synchronizuj Vinted →</span></td></tr>';
     return;
   }
   tb.innerHTML = recent.map(s=>`<tr>
@@ -2286,6 +2373,7 @@ function renderLimitBanner(all) {
   if (!banner) return;
   const now = new Date();
   const limit = appState.taxLimit || 3499;
+  // FIX: limit miesięczny = tylko bieżący miesiąc, nie totalny
   const monthRev = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
   const pct = Math.min(Math.round(monthRev/limit*100),100);
   // Always show
@@ -2547,6 +2635,7 @@ async function syncFromSheets() {
 
     if (!appState.syncedData.length) throw new Error('Nie znaleziono danych — sprawdź czy zakładka "Vinted" zawiera wiersze z danymi.');
 
+    appState.lastSyncTime = new Date().toISOString();
     saveState();
     renderSyncTable(appState.syncedData);
     updateSyncStats(appState.syncedData);
@@ -2555,12 +2644,39 @@ async function syncFromSheets() {
     document.getElementById('st3').className = 'badge badge-green';
     showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień z Vinted!`, 'success');
     sendNotification('AllInOne — Synchronizacja gotowa 🛍️', `Pobrano ${appState.syncedData.length} zamówień z Vinted!`);
+
+    // === KLUCZOWE: natychmiast odśwież cały dashboard ===
+    markDirty('sync');
+    // Jeśli użytkownik jest na dashboardzie — pokaż toast z podsumowaniem
+    const activePage = document.querySelector('.page.active')?.id;
+    if (activePage === 'page-dashboard') {
+      const rev = appState.syncedData.reduce((s,r)=>s+(parseFloat(r.price)||0),0);
+      showToast(`🔄 Dashboard odświeżony — ${appState.syncedData.length} zamówień, ${Math.round(rev)} zł`);
+    }
+    // Aktualizuj badge sync w navbarze
+    _updateSyncBadge();
   } catch(e) {
     showSyncStatus('❌ ' + e.message, 'error');
     console.error('Błąd sync:', e);
   }
   document.getElementById('syncBtn').textContent = '🔄 Synchronizuj';
   document.getElementById('syncBtn').disabled = false;
+}
+
+function _updateSyncBadge() {
+  // Aktualizuj wskaźnik "live" w sidebarze przy Sync Vinted
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    if (item.textContent.includes('Sync Vinted')) {
+      const dot = item.querySelector('.live-sync-dot');
+      if (!dot) {
+        const d = document.createElement('span');
+        d.className = 'live-sync-dot';
+        d.style.cssText = 'width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;margin-left:auto;animation:pulse 2s infinite';
+        item.appendChild(d);
+      }
+    }
+  });
 }
 
 function renderSyncTable(data) {
@@ -2588,6 +2704,10 @@ function loadDemoData() {
   saveState();
   renderSyncTable(appState.syncedData);
   updateSyncStats(appState.syncedData);
+  document.getElementById('lastSync').textContent = new Date().toLocaleString('pl-PL');
+  // Odśwież dashboard z danymi demo
+  markDirty('sync');
+  showToast('🎭 Dane demo załadowane — dashboard odświeżony!');
   document.getElementById('lastSync').textContent = 'Demo — ' + new Date().toLocaleString('pl-PL');
   showSyncStatus('✅ Dane demo załadowane! Tak będzie wyglądać po prawdziwej synchronizacji.', 'success');
 }
@@ -2618,7 +2738,7 @@ function saveProfile() {
   document.getElementById('sidebarName').textContent = name;
   document.getElementById('topbarAvatar').textContent = (appState.user.first[0]+appState.user.last[0]).toUpperCase();
   saveState();
-  alert('✅ Profil zapisany!');
+  showToast('✅ Profil zapisany!');
 }
 
 function updateTaxLimit() {
@@ -2630,13 +2750,15 @@ function updateTaxLimit() {
 function saveTaxSettings() {
   appState.taxLimit = parseInt(document.getElementById('taxLimit').value) || 3499;
   saveState();
-  alert('✅ Ustawienia podatkowe zapisane!');
+  showToast('✅ Ustawienia podatkowe zapisane!');
 }
 
 function clearAllData() {
-  appState.sales = []; appState.products = []; appState.costs = []; appState.syncedData = [];
-  saveState(); renderAll();
-  alert('Wszystkie dane zostały usunięte.');
+  showConfirm('Usunąć WSZYSTKIE dane? Tej operacji nie można cofnąć!', () => {
+    appState.sales = []; appState.products = []; appState.costs = []; appState.syncedData = [];
+    saveState(); renderAll();
+    showToast('Wszystkie dane zostały usunięte.');
+  });
 }
 
 // ===== INIT =====
@@ -2719,26 +2841,51 @@ function updatePlanUI() {
   }
 }
 
+// ===== CUSTOM CONFIRM MODAL =====
+function showConfirm(msg, onYes) {
+  let overlay = document.getElementById('confirmOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'confirmOverlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;backdrop-filter:blur(4px);align-items:center;justify-content:center';
+    overlay.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:360px;width:calc(100%-32px);box-shadow:var(--shadow)">
+      <div id="confirmMsg" style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:20px;line-height:1.5"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" style="flex:1" id="confirmNo">Anuluj</button>
+        <button class="btn btn-primary" style="flex:1;background:linear-gradient(135deg,#dc2626,#9b1c1c)" id="confirmYes">Usuń</button>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('confirmNo').onclick = () => { overlay.style.display = 'none'; };
+  }
+  document.getElementById('confirmMsg').textContent = msg;
+  overlay.style.display = 'flex';
+  document.getElementById('confirmYes').onclick = () => { overlay.style.display = 'none'; onYes(); };
+}
+
 // ===== DELETE FUNCTIONS =====
 function deleteSale(id) {
-  if (!confirm('Usunąć tę sprzedaż?')) return;
-  appState.sales = appState.sales.filter(s => s.id !== id);
-  saveState(); renderAll();
-  showToast('Sprzedaż usunięta');
+  showConfirm('Usunąć tę sprzedaż?', () => {
+    appState.sales = appState.sales.filter(s => s.id !== id);
+    saveState(); markDirty('sales');
+    showToast('Sprzedaż usunięta');
+  });
 }
 
 function deleteProduct(id) {
-  if (!confirm('Usunąć ten produkt z magazynu?')) return;
-  appState.products = appState.products.filter(p => p.id !== id);
-  saveState(); renderAll();
-  showToast('Produkt usunięty');
+  showConfirm('Usunąć ten produkt z magazynu?', () => {
+    appState.products = appState.products.filter(p => p.id !== id);
+    saveState(); markDirty('products');
+    showToast('Produkt usunięty');
+  });
 }
 
 function deleteCost(id) {
-  if (!confirm('Usunąć ten koszt?')) return;
-  appState.costs = appState.costs.filter(c => c.id !== id);
-  saveState(); renderAll();
-  showToast('Koszt usunięty');
+  showConfirm('Usunąć ten koszt?', () => {
+    appState.costs = appState.costs.filter(c => c.id !== id);
+    saveState(); markDirty('costs');
+    showToast('Koszt usunięty');
+  });
 }
 
 // ===== EDIT FUNCTIONS =====
@@ -2772,7 +2919,7 @@ function saveSaleEdit() {
     profit: price - cost - ship - comm,
     status: document.getElementById('es_status').value,
   };
-  saveState(); renderAll(); closeModal();
+  saveState(); markDirty('sales'); closeModal();
   showToast('Sprzedaż zaktualizowana ✅');
 }
 
@@ -2804,7 +2951,7 @@ function saveProductEdit() {
     state:  document.getElementById('ep_state').value,
     tags:   document.getElementById('ep_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
   };
-  saveState(); renderAll(); closeModal();
+  saveState(); markDirty('products'); closeModal();
   showToast('Produkt zaktualizowany ✅');
 }
 
@@ -2833,7 +2980,7 @@ function saveCostEdit() {
     cat:    document.getElementById('ec_cat').value,
     date:   dateVal ? new Date(dateVal).toLocaleDateString('pl-PL') : appState.costs[idx].date,
   };
-  saveState(); renderAll(); closeModal();
+  saveState(); markDirty('costs'); closeModal();
   showToast('Koszt zaktualizowany ✅');
 }
 
@@ -3291,7 +3438,7 @@ function quickAddSale() {
     buyer: '—'
   };
   appState.sales.unshift(sale);
-  saveState(); renderAll();
+  saveState(); markDirty('sales');
   document.getElementById('qa_name').value = '';
   document.getElementById('qa_price').value = '';
   showToast('✅ Dodano: ' + name + ' — ' + fmtZl(price));
@@ -3472,7 +3619,98 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// year page is called in renderAll directly
+// ===== DEBOUNCE =====
+function debounce(fn, ms) {
+  let timer;
+  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+}
+
+// ===== GLOBAL SEARCH =====
+const _debouncedSearch = debounce((q) => {
+  const query = (q || '').toLowerCase().trim();
+  const activePage = document.querySelector('.page.active')?.id;
+  if (activePage === 'page-sales') {
+    document.querySelectorAll('#salesTableBody tr').forEach(row => {
+      row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
+  } else if (activePage === 'page-products') {
+    document.querySelectorAll('#productsTableBody tr').forEach(row => {
+      row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
+  }
+}, 250);
+function handleSearch(val) { _debouncedSearch(val); }
+
+// ===== AUTO-REFRESH FROM SHEETS (co 5 min) =====
+let _autoRefreshTimer = null;
+function startAutoRefresh() {
+  stopAutoRefresh();
+  if (!appState.sheetsUrl) return;
+  _autoRefreshTimer = setInterval(async () => {
+    if (!appState.sheetsUrl) return;
+    try {
+      const match = appState.sheetsUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (!match) return;
+      const sheetId = match[1];
+      const gidMatch = appState.sheetsUrl.match(/[#?&]gid=(\d+)/);
+      const gid = gidMatch ? gidMatch[1] : '0';
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+      const res = await fetch(csvUrl);
+      if (!res.ok) return;
+      const text = await res.text();
+      const lines = text.trim().split('\n').filter(l=>l.trim());
+      if (lines.length < 2) return;
+      const rows = lines.map(l=>parseCSVLine(l));
+      const header = rows[0];
+      const idx = {
+        product: header.findIndex(h=>/produkt/i.test(h)),
+        price:   header.findIndex(h=>/cena/i.test(h)),
+        status:  header.findIndex(h=>/status/i.test(h)),
+        date:    header.findIndex(h=>/data/i.test(h)),
+        buyer:   header.findIndex(h=>/kupuj/i.test(h)),
+        platform:header.findIndex(h=>/platforma/i.test(h)),
+      };
+      const fresh = rows.slice(1).map(r=>({
+        product:  idx.product>=0?(r[idx.product]||'—'):'—',
+        price:    idx.price>=0?(r[idx.price]||'0'):'0',
+        status:   idx.status>=0?(r[idx.status]||'—'):'—',
+        date:     idx.date>=0?(r[idx.date]||'—'):'—',
+        buyer:    idx.buyer>=0?(r[idx.buyer]||'—'):'—',
+        platform: idx.platform>=0?(r[idx.platform]||'Vinted'):'Vinted',
+      })).filter(r=>r.price!=='0'||r.status!=='—');
+      // Only update if data actually changed
+      if (fresh.length !== appState.syncedData.length ||
+          JSON.stringify(fresh[0]) !== JSON.stringify(appState.syncedData[0])) {
+        const prevLen = appState.syncedData.length;
+        appState.syncedData = fresh;
+        appState.lastSyncTime = new Date().toISOString();
+        saveState();
+        markDirty('sync');
+        const newCount = fresh.length - prevLen;
+        if (newCount > 0) {
+          showToast(`🔔 Nowe zamówienia: +${newCount} z Vinted!`);
+          sendNotification('AllInOne', `Nowe zamówienia: +${newCount} z Vinted!`);
+        }
+        _updateLastSyncUI();
+      }
+    } catch(e) { /* silent fail on auto-refresh */ }
+  }, 5 * 60 * 1000); // co 5 minut
+}
+function stopAutoRefresh() {
+  if (_autoRefreshTimer) { clearInterval(_autoRefreshTimer); _autoRefreshTimer = null; }
+}
+function _updateLastSyncUI() {
+  const el = document.getElementById('lastSync');
+  if (el && appState.lastSyncTime) {
+    el.textContent = new Date(appState.lastSyncTime).toLocaleString('pl-PL');
+  }
+  // Update dash sync badge
+  const badge = document.getElementById('dashSyncBadge');
+  if (badge && appState.lastSyncTime) {
+    badge.textContent = '🟢 Live — ' + new Date(appState.lastSyncTime).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'});
+    badge.style.display = 'inline-flex';
+  }
+}
 
 </script>
 <!-- ===== ONBOARDING WIZARD ===== -->
