@@ -854,7 +854,12 @@ select option { background:var(--bg3); }
 
 <!-- ===== DASHBOARD ===== -->
 <section class="page active" id="page-dashboard">
-  <div class="breadcrumb"><span data-i18n="nav_dashboard">Dashboard</span></div>
+  <div class="breadcrumb" style="display:flex;align-items:center;justify-content:space-between">
+    <span data-i18n="nav_dashboard">Dashboard</span>
+    <button onclick="refreshDashboard()" id="refreshBtn" style="display:flex;align-items:center;gap:6px;background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'">
+      <span id="refreshIcon" style="display:inline-block;transition:transform .5s">🔄</span> Odśwież
+    </button>
+  </div>
 
   <!-- LIMIT BANNER -->
   <div id="limitBanner" style="display:none;background:linear-gradient(90deg,rgba(245,158,11,.15),rgba(239,68,68,.1));border:1px solid rgba(245,158,11,.4);border-radius:12px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
@@ -1010,6 +1015,52 @@ select option { background:var(--bg3); }
 <section class="page" id="page-sales">
   <div class="breadcrumb"><span data-i18n="nav_sales">Sprzedaż</span></div>
 
+  <!-- STATS BAR -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px" id="salesStatsBar">
+    <div class="stat-card purple" style="padding:16px 18px">
+      <div class="stat-icon">💰</div>
+      <div class="stat-label">Przychód łącznie</div>
+      <div class="stat-value" id="ss_total">— zł</div>
+      <div style="font-size:11px;color:var(--text3)" id="ss_total_sub">wszystkie sprzedaże</div>
+    </div>
+    <div class="stat-card bordeaux" style="padding:16px 18px">
+      <div class="stat-icon">✨</div>
+      <div class="stat-label">Zysk netto</div>
+      <div class="stat-value" id="ss_profit">— zł</div>
+      <div style="font-size:11px;color:var(--text3)" id="ss_profit_sub">po kosztach</div>
+    </div>
+    <div class="stat-card green" style="padding:16px 18px">
+      <div class="stat-icon">📦</div>
+      <div class="stat-label">Liczba sprzedaży</div>
+      <div class="stat-value" id="ss_count">0</div>
+      <div style="font-size:11px;color:var(--text3)" id="ss_count_sub">transakcji</div>
+    </div>
+    <div class="stat-card orange" style="padding:16px 18px">
+      <div class="stat-icon">📊</div>
+      <div class="stat-label">Śr. cena</div>
+      <div class="stat-value" id="ss_avg">— zł</div>
+      <div style="font-size:11px;color:var(--text3)" id="ss_avg_sub">za sztukę</div>
+    </div>
+  </div>
+
+  <!-- TOP PRODUKTY + PLATFORMY -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+    <div class="card" style="padding:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="card-title" style="margin:0">🏆 Top produkty</div>
+        <span style="font-size:11px;color:var(--text3)" id="ss_top_period">wszystkie</span>
+      </div>
+      <div id="salesTopProducts"><div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">Brak danych</div></div>
+    </div>
+    <div class="card" style="padding:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="card-title" style="margin:0">🌐 Platformy</div>
+        <span style="font-size:11px;color:var(--text3)">podział</span>
+      </div>
+      <div id="salesPlatforms"><div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">Brak danych</div></div>
+    </div>
+  </div>
+
   <!-- QUICK ADD -->
   <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(136,19,55,.04));border:1px solid rgba(124,58,237,.2)">
     <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px">⚡ Szybkie dodanie</div>
@@ -1025,7 +1076,7 @@ select option { background:var(--bg3); }
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <select id="filterPlatform" style="width:auto;padding:8px 12px" onchange="renderSales()"><option value="">Wszystkie platformy</option><option>Vinted</option><option>Etsy</option><option>eBay</option><option>OLX</option></select>
-      <select id="filterPeriod" style="width:auto;padding:8px 12px" onchange="renderSales()"><option value="">Wszystkie okresy</option><option value="month">Ten miesiąc</option><option value="prev">Poprzedni miesiąc</option><option value="year">Ten rok</option></select>
+      <select id="filterPeriod" style="width:auto;padding:8px 12px" onchange="renderSales()"><option value="">Wszystkie okresy</option><option value="month">Aktywny miesiąc</option><option value="prev">Poprzedni miesiąc</option><option value="year">Aktywny rok</option></select>
       <select id="filterStatus" style="width:auto;padding:8px 12px" onchange="renderSales()"><option value="">Wszystkie statusy</option><option>Sprzedane</option><option>Wysłane</option><option>Dostarczone</option><option>Zwrot</option></select>
     </div>
     <div style="font-size:13px;color:var(--text3)" id="salesCountLabel"></div>
@@ -1771,6 +1822,25 @@ function sameMonth(d1, d2) {
   return d1 && d2 && d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth();
 }
 
+/**
+ * getActivePeriod(all) - rozwiazuje problem dat raz na zawsze.
+ * Anchor = data najnowszej sprzedazy. Okresy liczone od anchora, nie od today.
+ */
+function getActivePeriod(all) {
+  const now = new Date();
+  const dates = all.map(s => parseDate(s.date)).filter(Boolean);
+  const anchor = dates.length > 0 ? new Date(Math.max(...dates.map(d=>d.getTime()))) : now;
+  const calMonth = all.filter(s => { const d=parseDate(s.date); return d && d.getFullYear()===anchor.getFullYear() && d.getMonth()===anchor.getMonth(); });
+  const d30 = new Date(anchor); d30.setDate(d30.getDate()-30);
+  const last30 = all.filter(s => { const d=parseDate(s.date); return d && d>=d30 && d<=anchor; });
+  const d365 = new Date(anchor); d365.setDate(d365.getDate()-365);
+  const lastYear = all.filter(s => { const d=parseDate(s.date); return d && d>=d365 && d<=anchor; });
+  const bestMonth = calMonth.length > 0 ? calMonth : last30;
+  const isCurrentMonth = sameMonth(anchor, now);
+  const label = isCurrentMonth ? "w tym mies." : anchor.toLocaleDateString("pl-PL",{month:"long",year:"numeric"});
+  return { anchor, now, calMonth, last30, lastYear, bestMonth, label };
+}
+
 // ===== STATE =====
 let appState = {
   user: null,
@@ -2334,14 +2404,9 @@ function renderSources(all) {
 function renderTopProducts(all) {
   const el = document.getElementById('topProductsList');
   if (!el) return;
-  const now = new Date();
-  // FIX: fallback do last 30 dni jeśli bieżący miesiąc pustu
-  const calMonth = all.filter(s => { const d=parseDate(s.date); return d && sameMonth(d,now); });
-  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
-  const last30  = all.filter(s => { const d=parseDate(s.date); return d && d>=last30d; });
-  const month   = calMonth.length > 0 ? calMonth : last30;
+  const { bestMonth: month, label: topLabel } = getActivePeriod(all);
   const periodBadge = document.getElementById('topProdPeriod');
-  if (periodBadge) periodBadge.textContent = calMonth.length > 0 ? 'ten miesiąc' : 'ostatnie 30 dni';
+  if (periodBadge) periodBadge.textContent = topLabel;
   const map = {};
   month.forEach(s => {
     const k = s.name;
@@ -2366,22 +2431,14 @@ function renderTopProducts(all) {
 }
 
 function renderForecast(all) {
-  const now   = new Date();
-  const year  = now.getFullYear();
-  const month = now.getMonth();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const dayOfMonth  = now.getDate();
-  // FIX: fallback do last 30 dni
-  const calMonthSales = all.filter(s => { const d=parseDate(s.date); return d && sameMonth(d,now); });
-  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
-  const last30  = all.filter(s => { const d=parseDate(s.date); return d && d>=last30d; });
-  const monthSales = calMonthSales.length > 0 ? calMonthSales : last30;
-  const monthRev   = monthSales.reduce((s,x)=>s+pf(x.price),0);
-  // Jeśli dane historyczne — prognoza na podstawie średniej dziennej z ostatnich 30 dni
-  const dailyAvg   = calMonthSales.length > 0
-    ? monthRev / dayOfMonth
-    : monthRev / 30;
-  const forecast   = Math.round(dailyAvg * daysInMonth);
+  const { anchor, calMonth: calMonthSales, bestMonth: monthSales } = getActivePeriod(all);
+  const year  = anchor.getFullYear();
+  const month = anchor.getMonth();
+  const daysInMonth  = new Date(year, month+1, 0).getDate();
+  const dayOfMonth   = anchor.getDate();
+  const monthRev     = monthSales.reduce((s,x)=>s+pf(x.price),0);
+  const dailyAvg     = calMonthSales.length > 0 ? monthRev/dayOfMonth : monthRev/30;
+  const forecast     = Math.round(dailyAvg * daysInMonth);
   const el = document.getElementById('d_forecast');
   const sub = document.getElementById('d_forecast_sub');
   const bar = document.getElementById('forecastBar');
@@ -2389,7 +2446,7 @@ function renderForecast(all) {
   const barPct = document.getElementById('forecastBarPct');
   if (el) el.textContent = monthRev > 0 ? fmtZl(forecast) : '— zł';
   if (sub) sub.textContent = monthRev > 0
-    ? `bazując na ${calMonthSales.length>0?dayOfMonth+'dniach':'śr. z 30 dni'} · ${fmtZl(monthRev)} do teraz`
+    ? `bazując na ${calMonthSales.length>0?dayOfMonth+' dniach':'śr. z 30 dni'} · ${fmtZl(monthRev)} do teraz`
     : 'Dodaj sprzedaże aby zobaczyć prognozę';
   if (bar) bar.style.display = monthRev > 0 ? 'block' : 'none';
   if (barFill) barFill.style.width = Math.min(100, Math.round(dayOfMonth/daysInMonth*100)) + '%';
@@ -2458,14 +2515,8 @@ function renderYearSummary(all) {
   const grid = document.getElementById('yearSummaryGrid');
   const yearEl = document.getElementById('yearSummaryYear');
   if (!card || !grid) return;
-
-  // Auto-wykryj rok z danymi (nie hardkoduj bieżącego roku)
-  const yearCounts = {};
-  all.forEach(s => { const d=parseDate(s.date); if(d) { const y=d.getFullYear(); yearCounts[y]=(yearCounts[y]||0)+1; } });
-  const years = Object.keys(yearCounts).map(Number).sort((a,b)=>b-a);
-  const currentYear = new Date().getFullYear();
-  const year = (yearCounts[currentYear] > 0) ? currentYear : (years[0] || currentYear);
-
+  const { anchor } = getActivePeriod(all);
+  const year = anchor.getFullYear();
   if (yearEl) yearEl.textContent = year;
   const months = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
   const rows = months.map((name,mi) => {
@@ -2487,13 +2538,8 @@ function renderYearSummary(all) {
 function renderLimitBanner(all) {
   const banner = document.getElementById('limitBanner');
   if (!banner) return;
-  const now = new Date();
   const limit = appState.taxLimit || 3499;
-  // FIX: fallback do last 30 dni jeśli bieżący miesiąc ma 0 danych
-  const calMonthRev = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
-  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
-  const last30Rev = all.filter(s=>{ const d=parseDate(s.date); return d && d>=last30d; }).reduce((s,x)=>s+pf(x.price),0);
-  const monthRev = calMonthRev > 0 ? calMonthRev : last30Rev;
+  const monthRev = getActivePeriod(all).bestMonth.reduce((s,x)=>s+pf(x.price),0);
   const pct = Math.min(Math.round(monthRev/limit*100),100);
   // Always show
   banner.style.display = 'flex';
@@ -2521,22 +2567,32 @@ function renderLimitBanner(all) {
   if (dot) dot.style.display = pct >= 80 ? 'block' : 'none';
 }
 
+function refreshDashboard() {
+  const btn = document.getElementById('refreshBtn');
+  const icon = document.getElementById('refreshIcon');
+  if (icon) { icon.style.transform = 'rotate(360deg)'; setTimeout(()=>icon.style.transform='', 500); }
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+  // Jeśli mamy URL sheets - pobierz nowe dane, w przeciwnym razie tylko przerysuj
+  const sheetsInput = document.getElementById('sheetsUrlInput');
+  const hasUrl = (sheetsInput && sheetsInput.value.trim()) || appState.sheetsUrl;
+  if (hasUrl) {
+    syncFromSheets().finally(() => {
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    });
+  } else {
+    renderAll();
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    showToast('✅ Dashboard odświeżony');
+  }
+}
+
 function updateDashboard() {
   const all      = getAllSales();
-  const now      = new Date();
+  const { anchor, now, bestMonth, label: periodLabel } = getActivePeriod(all);
   const costTotal= (appState.costs||[]).reduce((s,c)=>s+pf(c.amount),0);
 
-  // FIX: używaj parseDate do porównania "dziś" (nie string-compare który nie działa z syncedData)
-  const todaySales = all.filter(s=>{ const d=parseDate(s.date); return d && sameDay(d,now); });
-
-  // FIX: "w miesiącu" = ostatnie 30 dni jeśli bieżący miesiąc ma 0 danych, fallback do ostatnich 30 dni
-  const calMonthSales = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); });
-  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
-  const last30Sales   = all.filter(s=>{ const d=parseDate(s.date); return d && d>=last30d; });
-
-  // Użyj danych z bieżącego miesiąca jeśli są, w przeciwnym razie last 30 dni
-  const monthSales  = calMonthSales.length > 0 ? calMonthSales : last30Sales;
-  const periodLabel = calMonthSales.length > 0 ? 'w tym mies.' : 'ostatnie 30 dni';
+  const todaySales  = all.filter(s=>{ const d=parseDate(s.date); return d && sameDay(d,now); });
+  const monthSales  = bestMonth;
 
   const todayRev    = todaySales.reduce((s,x)=>s+pf(x.price),0);
   const monthRev    = monthSales.reduce((s,x)=>s+pf(x.price),0);
@@ -2574,13 +2630,9 @@ function updateDashboard() {
 
 function updateTaxPage() {
   const all    = getAllSales();
-  const now    = new Date();
+  const { bestMonth: taxMonthSales } = getActivePeriod(all);
   const income = all.reduce((s,x)=>s+pf(x.price),0);
-  // FIX: fallback do last 30 dni jeśli bieżący miesiąc ma 0 danych
-  const calMonthInc = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
-  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
-  const last30Inc = all.filter(s=>{ const d=parseDate(s.date); return d && d>=last30d; }).reduce((s,x)=>s+pf(x.price),0);
-  const monthInc = calMonthInc > 0 ? calMonthInc : last30Inc;
+  const monthInc = taxMonthSales.reduce((s,x)=>s+pf(x.price),0);
   const costs  = (appState.costs||[]).reduce((s,c)=>s+pf(c.amount),0);
   const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
   setEl('tax_month', fmtZl(monthInc));
@@ -2777,8 +2829,6 @@ async function syncFromSheets() {
     document.getElementById('st3').className = 'badge badge-green';
     showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień z Vinted!`, 'success');
     sendNotification('AllInOne — Synchronizacja gotowa 🛍️', `Pobrano ${appState.syncedData.length} zamówień z Vinted!`);
-    // Odśwież dashboard i wszystkie strony po synchronizacji
-    renderAll();
   } catch(e) {
     showSyncStatus('❌ ' + e.message, 'error');
     console.error('Błąd sync:', e);
@@ -2814,8 +2864,6 @@ function loadDemoData() {
   updateSyncStats(appState.syncedData);
   document.getElementById('lastSync').textContent = 'Demo — ' + new Date().toLocaleString('pl-PL');
   showSyncStatus('✅ Dane demo załadowane! Tak będzie wyglądać po prawdziwej synchronizacji.', 'success');
-  // Odśwież dashboard i wszystkie strony
-  renderAll();
 }
 
 function showSyncStatus(msg, type) {
@@ -2870,12 +2918,10 @@ window.addEventListener('load', () => {
   loadState();
   // Apply saved theme
   setTheme(appState.theme || 'dark');
-  // Check if logged in
-  if (appState.user) {
-    loginSuccess(appState.user);
-  } else {
-    showScreen('screenLogin');
-  }
+  // Zawsze wymagaj logowania przy każdym otwarciu strony
+  appState.user = null;
+  saveState();
+  showScreen('screenLogin');
   // Enter key on login
   document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
   document.getElementById('loginEmail').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
@@ -3542,13 +3588,12 @@ function updateYearPage() {
   const costs = appState.costs || [];
   const now   = new Date();
 
-  // FIX: znajdź rok z największą ilością danych (nie zawsze bieżący rok)
+  const { anchor: yrAnchor } = getActivePeriod(all);
+  // Zbierz wszystkie lata z danymi (do selectora)
   const yearCounts = {};
   all.forEach(s => { const d=parseDate(s.date); if(d) { const y=d.getFullYear(); yearCounts[y]=(yearCounts[y]||0)+1; } });
   const years = Object.keys(yearCounts).map(Number).sort((a,b)=>b-a);
-  // Preferuj bieżący rok jeśli ma dane, w przeciwnym razie ostatni rok z danymi
-  const currentYear = now.getFullYear();
-  const year = yearCounts[currentYear] > 0 ? currentYear : (years[0] || currentYear);
+  const year = yrAnchor.getFullYear();
 
   const yearSales = all.filter(s=>{ const d=parseDate(s.date); return d && d.getFullYear()===year; });
   const yearCostsFilt = costs.filter(c=>{ const d=parseDate(c.date); return d && d.getFullYear()===year; });
@@ -3683,25 +3728,99 @@ function renderSales() {
   const tbody = document.getElementById('salesTableBody');
   if (!tbody) return;
   const all = getAllSales();
+  const { anchor, bestMonth } = getActivePeriod(all);
   const platFilter   = (document.getElementById('filterPlatform')?.value || '').toLowerCase();
   const periodFilter = document.getElementById('filterPeriod')?.value || '';
   const statusFilter = (document.getElementById('filterStatus')?.value || '').toLowerCase();
-  const now = new Date();
+
   let filtered = all.filter(s => {
     if (platFilter && !(s.platform||'').toLowerCase().includes(platFilter)) return false;
     if (statusFilter && !(s.status||'').toLowerCase().includes(statusFilter)) return false;
     if (periodFilter) {
       const d = parseDate(s.date);
       if (!d) return false;
-      if (periodFilter === 'month' && !sameMonth(d, now)) return false;
+      // Używamy anchor (najnowsza data) żeby filtry działały z danymi historycznymi
+      if (periodFilter === 'month') {
+        if (!(d.getFullYear()===anchor.getFullYear() && d.getMonth()===anchor.getMonth())) return false;
+      }
       if (periodFilter === 'prev') {
-        const prev = new Date(now.getFullYear(), now.getMonth()-1, 1);
+        const prev = new Date(anchor.getFullYear(), anchor.getMonth()-1, 1);
         if (!(d.getFullYear()===prev.getFullYear() && d.getMonth()===prev.getMonth())) return false;
       }
-      if (periodFilter === 'year' && d.getFullYear() !== now.getFullYear()) return false;
+      if (periodFilter === 'year' && d.getFullYear() !== anchor.getFullYear()) return false;
     }
     return true;
   });
+
+  // ---- Stats bar (zawsze na WSZYSTKICH danych, niezależnie od filtrów) ----
+  const statsBase = all;
+  const totalRev  = statsBase.reduce((s,x)=>s+pf(x.price),0);
+  const totalProfit = statsBase.reduce((s,x)=>s+(pf(x.profit)||pf(x.price)),0);
+  const avgPrice  = statsBase.length ? totalRev/statsBase.length : 0;
+  const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setEl('ss_total',  fmtZl(totalRev));
+  setEl('ss_total_sub', statsBase.length + ' sprzedaży łącznie');
+  setEl('ss_profit', fmtZl(totalProfit));
+  setEl('ss_profit_sub', 'marża: ' + (totalRev>0?Math.round(totalProfit/totalRev*100)+'%':'—'));
+  setEl('ss_count',  statsBase.length);
+  setEl('ss_count_sub', 'w tym ' + statsBase.filter(s=>s.synced).length + ' z Vinted');
+  setEl('ss_avg',    fmtZl(Math.round(avgPrice)));
+  setEl('ss_avg_sub', 'mediana: ' + fmtZl(Math.round(statsBase.map(s=>pf(s.price)).sort((a,b)=>a-b)[Math.floor(statsBase.length/2)]||0)));
+
+  // ---- Top produkty ----
+  const topEl = document.getElementById('salesTopProducts');
+  const periodEl = document.getElementById('ss_top_period');
+  if (topEl) {
+    const pMap = {};
+    statsBase.forEach(s=>{ const k=s.name||'—'; if(!pMap[k]) pMap[k]={name:k,total:0,count:0}; pMap[k].total+=pf(s.price); pMap[k].count++; });
+    const top5 = Object.values(pMap).sort((a,b)=>b.total-a.total).slice(0,5);
+    const maxT = Math.max(...top5.map(p=>p.total),1);
+    if (periodEl) periodEl.textContent = 'wszystkie';
+    if (!top5.length) {
+      topEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px">Brak danych</div>';
+    } else {
+      topEl.innerHTML = top5.map((p,i) => `
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border2)">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0">${i+1}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+            <div style="height:4px;border-radius:2px;background:var(--bg4);margin-top:3px"><div style="height:100%;border-radius:2px;background:var(--grad);width:${Math.round(p.total/maxT*100)}%"></div></div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:13px;font-weight:700;color:var(--purple-light)">${fmtZl(p.total)}</div>
+            <div style="font-size:10px;color:var(--text3)">${p.count}×</div>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  // ---- Platformy ----
+  const platEl = document.getElementById('salesPlatforms');
+  if (platEl) {
+    const platMap = {};
+    statsBase.forEach(s=>{ const k=s.platform||'Inne'; platMap[k]=(platMap[k]||0)+pf(s.price); });
+    const platEntries = Object.entries(platMap).sort((a,b)=>b[1]-a[1]);
+    const platTotal = platEntries.reduce((s,[,v])=>s+v,0)||1;
+    const colors = ['var(--purple)','var(--bordeaux)','#f59e0b','#34d399','#60a5fa'];
+    if (!platEntries.length) {
+      platEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px">Brak danych</div>';
+    } else {
+      platEl.innerHTML = platEntries.map(([name,rev],i) => {
+        const pct = Math.round(rev/platTotal*100);
+        return `<div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="font-weight:600;color:var(--text)">${name}</span>
+            <span style="color:var(--text3)">${fmtZl(Math.round(rev))} <span style="color:var(--text2)">(${pct}%)</span></span>
+          </div>
+          <div style="height:6px;border-radius:3px;background:var(--bg4)">
+            <div style="height:100%;border-radius:3px;background:${colors[i]||colors[0]};width:${pct}%;transition:width .4s ease"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ---- Tabela ----
   const countLabel = document.getElementById('salesCountLabel');
   if (countLabel) countLabel.textContent = `${filtered.length} z ${all.length} sprzedaży`;
   if (!filtered.length) {
