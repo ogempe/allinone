@@ -2458,8 +2458,14 @@ function renderYearSummary(all) {
   const grid = document.getElementById('yearSummaryGrid');
   const yearEl = document.getElementById('yearSummaryYear');
   if (!card || !grid) return;
-  const now = new Date();
-  const year = now.getFullYear();
+
+  // Auto-wykryj rok z danymi (nie hardkoduj bieżącego roku)
+  const yearCounts = {};
+  all.forEach(s => { const d=parseDate(s.date); if(d) { const y=d.getFullYear(); yearCounts[y]=(yearCounts[y]||0)+1; } });
+  const years = Object.keys(yearCounts).map(Number).sort((a,b)=>b-a);
+  const currentYear = new Date().getFullYear();
+  const year = (yearCounts[currentYear] > 0) ? currentYear : (years[0] || currentYear);
+
   if (yearEl) yearEl.textContent = year;
   const months = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
   const rows = months.map((name,mi) => {
@@ -2771,6 +2777,8 @@ async function syncFromSheets() {
     document.getElementById('st3').className = 'badge badge-green';
     showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień z Vinted!`, 'success');
     sendNotification('AllInOne — Synchronizacja gotowa 🛍️', `Pobrano ${appState.syncedData.length} zamówień z Vinted!`);
+    // Odśwież dashboard i wszystkie strony po synchronizacji
+    renderAll();
   } catch(e) {
     showSyncStatus('❌ ' + e.message, 'error');
     console.error('Błąd sync:', e);
@@ -2806,6 +2814,8 @@ function loadDemoData() {
   updateSyncStats(appState.syncedData);
   document.getElementById('lastSync').textContent = 'Demo — ' + new Date().toLocaleString('pl-PL');
   showSyncStatus('✅ Dane demo załadowane! Tak będzie wyglądać po prawdziwej synchronizacji.', 'success');
+  // Odśwież dashboard i wszystkie strony
+  renderAll();
 }
 
 function showSyncStatus(msg, type) {
