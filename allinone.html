@@ -610,36 +610,6 @@ select option { background:var(--bg3); }
 .welcome-step-text { font-size:13px; color:var(--text2); line-height:1.4; }
 .welcome-step-text strong { color:var(--text); }
 
-/* ===== DEMO LOCK ===== */
-.demo-locked {
-  position:relative; pointer-events:none;
-}
-.demo-locked::after {
-  content:''; position:absolute; inset:0; z-index:10;
-  background:rgba(10,10,15,0.55);
-  backdrop-filter:blur(3px) grayscale(0.8);
-  border-radius:inherit;
-  border:1px solid rgba(255,255,255,0.06);
-}
-.demo-lock-badge {
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  z-index:11; background:var(--card); border:1px solid var(--border);
-  border-radius:12px; padding:10px 18px; font-size:13px; font-weight:700;
-  color:var(--text2); white-space:nowrap; box-shadow:var(--shadow2);
-  display:flex; align-items:center; gap:8px; pointer-events:all; cursor:pointer;
-}
-.nav-item.demo-nav-locked {
-  opacity:0.45; position:relative;
-}
-.nav-item.demo-nav-locked::after {
-  content:'🔒'; position:absolute; right:10px; font-size:12px;
-}
-.nav-item.demo-nav-locked:hover { background:transparent !important; cursor:default; }
-
-/* ===== GHOST PLACEHOLDERS ===== */
-.ghost-chart { background:linear-gradient(90deg,var(--bg4) 25%,var(--bg3) 50%,var(--bg4) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
 /* ===== PROFITABILITY CALC ===== */
 .profit-calc-result { background:linear-gradient(135deg,rgba(52,211,153,.1),rgba(124,58,237,.1)); border:1px solid rgba(52,211,153,.2); border-radius:12px; padding:16px; margin-top:12px; }
 
@@ -1926,19 +1896,6 @@ function doRegister() {
 }
 
 function loginSuccess(user) {
-  const isDemo = user.email === 'demo@allinone.pl';
-
-  // Dla prawdziwego użytkownika — zawsze czyść pozostałości po demo
-  if (!isDemo) {
-    appState.plan = appState.plan === 'ultra' ? 'free' : (appState.plan || 'free');
-    if (appState._demoData) {
-      appState.syncedData = [];
-      appState._demoData = false;
-    }
-    // Odblokuj wszystkie sekcje (usuń overlaye i przywróć nav)
-    applyDemoLocks(false);
-  }
-
   appState.user = user;
   saveState();
 
@@ -1959,16 +1916,21 @@ function loginSuccess(user) {
   renderAll();
   updatePlanUI();
 
+  const isDemo = user.email === 'demo@allinone.pl';
+
   if (isDemo) {
-    applyDemoLocks(true);
+    // Demo — zablokuj wybrane sekcje
+    // Pokaż demo data od razu
     setTimeout(() => {
       const sd = document.getElementById('sheetsUrlInput');
       if (sd) sd.value = appState.sheetsUrl || '';
     }, 100);
   } else if (user._isNew) {
-    delete user._isNew;
+    // Nowy użytkownik — pokaż welcome modal
+    delete user.appState;
     setTimeout(() => showWelcome(user.first), 400);
   } else {
+    // Powracający użytkownik — wizard jeśli nie skonfigurował
     if (!appState.wizardDone && !appState.syncedData?.length) {
       setTimeout(() => showWizard(), 600);
     }
@@ -1992,65 +1954,8 @@ function closeWelcome() {
   }
 }
 
-// ===== DEMO LOCKS =====
-// Strony zablokowane w trybie demo (wymaga rejestracji)
-const DEMO_LOCKED_PAGES = ['tax', 'costs', 'reports', 'year']; // 'plans' zawsze widoczne
-
-function applyDemoLocks(isDemo) {
-  // Nav items
-  document.querySelectorAll('.nav-item').forEach(item => {
-    const onclick = item.getAttribute('onclick') || '';
-    const page = (onclick.match(/showPage\('(\w+)'/) || [])[1];
-    if (page && DEMO_LOCKED_PAGES.includes(page)) {
-      if (isDemo) {
-        item.classList.add('demo-nav-locked');
-        item.setAttribute('onclick', `showDemoLockToast('${page}')`);
-        item.setAttribute('data-original-onclick', `showPage('${page}',this)`);
-      } else {
-        item.classList.remove('demo-nav-locked');
-        const orig = item.getAttribute('data-original-onclick');
-        if (orig) item.setAttribute('onclick', orig);
-      }
-    }
-  });
-  // Page overlays
-  DEMO_LOCKED_PAGES.forEach(pageId => {
-    const page = document.getElementById('page-' + pageId);
-    if (!page) return;
-    let lockEl = page.querySelector('.demo-page-lock');
-    if (isDemo) {
-      if (!lockEl) {
-        lockEl = document.createElement('div');
-        lockEl.className = 'demo-page-lock';
-        lockEl.style.cssText = 'position:absolute;inset:0;z-index:50;background:rgba(10,10,15,0.7);backdrop-filter:blur(4px) grayscale(1);border-radius:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px';
-        lockEl.innerHTML = `
-          <div style="font-size:48px">🔒</div>
-          <div style="font-family:\'Syne\',sans-serif;font-size:20px;font-weight:800;color:#fff;text-align:center">Ta sekcja wymaga konta</div>
-          <div style="font-size:14px;color:rgba(255,255,255,.6);text-align:center;max-width:300px">Zarejestruj się za darmo aby odblokować wszystkie funkcje AllInOne.</div>
-          <button class="btn-auth" style="max-width:260px;margin-top:4px" onclick="document.querySelectorAll('.auth-screen').forEach(s=>s.classList.remove('active'));showScreen('screenRegister');document.getElementById('app').classList.remove('active')">✨ Zarejestruj się za darmo</button>
-          <div style="font-size:12px;color:rgba(255,255,255,.4)">Już masz konto? <a onclick="document.getElementById(\'app\').classList.remove(\'active\');showScreen(\'screenLogin\')" style="color:var(--purple-light);cursor:pointer">Zaloguj się</a></div>`;
-        page.style.position = 'relative';
-        page.appendChild(lockEl);
-      }
-      lockEl.style.display = 'flex';
-    } else {
-      if (lockEl) lockEl.style.display = 'none';
-    }
-  });
-}
-
-function showDemoLockToast(page) {
-  showToast('🔒 Ta sekcja wymaga rejestracji — to tylko demo');
-  // Highlight register button briefly
-  const regBtn = document.getElementById('registerBtn');
-}
-
 function doLogout() {
-  // Wyczyść demo locki przed wylogowaniem
-  applyDemoLocks(false);
   appState.user = null;
-  appState._demoData = false;
-  if (appState.plan === 'ultra' && !appState._realPlan) appState.plan = 'free';
   saveState();
   document.getElementById('app').classList.remove('active');
   showScreen('screenLogin');
@@ -3428,11 +3333,8 @@ document.querySelectorAll('.nav-item').forEach(el => {
 
 // ===== QUICK DEMO LOGIN =====
 function quickDemo() {
-  // Oznacz dane jako demo — zostaną wyczyszczone gdy użytkownik się zarejestruje/zaloguje
   appState.plan = 'ultra';
-  appState._demoData = true;
-  appState.sales = [];
-  appState.costs = [];
+  // Załaduj przykładowe dane demo
   appState.syncedData = [
     { product:'Stone Island kurtka L',   price:'485', status:'Sprzedane',   date:'21.12.2025', buyer:'demo_user1', platform:'Vinted' },
     { product:'Szalik wełniany COS',     price:'55',  status:'Dostarczone', date:'12.12.2025', buyer:'demo_user2', platform:'Vinted' },
