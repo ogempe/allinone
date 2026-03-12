@@ -725,6 +725,9 @@ select option { background:var(--bg3); }
         <span class="nav-icon">🟢</span><span>Sync Vinted</span>
         <span class="nav-badge" style="background:linear-gradient(135deg,#059669,#34d399)">NEW</span>
       </div>
+      <div class="nav-item" onclick="showPage('year',this)">
+        <span class="nav-icon">📅</span>Podsumowanie roku
+      </div>
       <div class="nav-item" onclick="showPage('reports',this)">
         <span class="nav-icon">📑</span><span data-i18n="nav_reports">Raporty</span>
       </div>
@@ -784,105 +787,129 @@ select option { background:var(--bg3); }
 <!-- ===== DASHBOARD ===== -->
 <section class="page active" id="page-dashboard">
   <div class="breadcrumb"><span data-i18n="nav_dashboard">Dashboard</span></div>
+
+  <!-- LIMIT BANNER -->
+  <div id="limitBanner" style="display:none;background:linear-gradient(90deg,rgba(245,158,11,.15),rgba(239,68,68,.1));border:1px solid rgba(245,158,11,.4);border-radius:12px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px" id="limitBannerIcon">🟡</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)" id="limitBannerText">Limit miesięczny</div>
+        <div style="font-size:11px;color:var(--text3)" id="limitBannerSub">—</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="min-width:120px">
+        <div class="tax-bar-wrap" style="margin-bottom:3px"><div class="tax-bar" id="limitBannerBar" style="width:0%"></div></div>
+        <div style="font-size:11px;color:var(--text3)" id="limitBannerPct">0%</div>
+      </div>
+      <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;white-space:nowrap" onclick="showPage('tax',document.querySelector('.nav-item'))">Szczegóły →</button>
+    </div>
+  </div>
+
+  <!-- STAT CARDS -->
   <div class="stats-grid">
     <div class="stat-card purple">
       <div class="stat-icon">💰</div>
-      <div class="stat-label" data-i18n="stat_today">Przychód dziś</div>
+      <div class="stat-label">Przychód dziś</div>
       <div class="stat-value" id="d_today">0 zł</div>
-      <div class="stat-change" style="color:var(--text3)" id="d_today_sub">Brak danych</div>
+      <div class="stat-change" id="d_today_sub" style="color:var(--text3)">0 sprzedaży</div>
     </div>
     <div class="stat-card bordeaux">
       <div class="stat-icon">📈</div>
-      <div class="stat-label" data-i18n="stat_month">Przychód w miesiącu</div>
+      <div class="stat-label">Przychód w miesiącu</div>
       <div class="stat-value" id="d_month">0 zł</div>
-      <div class="stat-change" style="color:var(--text3)" id="d_month_sub">Brak danych</div>
+      <div class="stat-change" id="d_month_sub" style="color:var(--text3)">0 sprzedaży</div>
     </div>
     <div class="stat-card green">
       <div class="stat-icon">✨</div>
-      <div class="stat-label" data-i18n="stat_profit">Realny zysk</div>
+      <div class="stat-label">Realny zysk (miesiąc)</div>
       <div class="stat-value" id="d_profit">0 zł</div>
-      <div class="stat-change" style="color:var(--text3)">Dodaj koszty aby wyliczyć</div>
+      <div class="stat-change" id="d_profit_sub" style="color:var(--text3)">po odliczeniu kosztów</div>
     </div>
     <div class="stat-card orange">
       <div class="stat-icon">🛒</div>
-      <div class="stat-label" data-i18n="stat_orders">Zamówienia</div>
+      <div class="stat-label">Sprzedaży łącznie</div>
       <div class="stat-value" id="d_orders">0</div>
-      <div class="stat-change" style="color:var(--text3)">Brak danych</div>
+      <div class="stat-change" id="d_orders_sub" style="color:var(--text3)">śr. — zł/szt</div>
     </div>
   </div>
 
+  <!-- WYKRES + ŹRÓDŁA -->
   <div class="grid-3-1">
     <div class="card">
       <div class="card-header">
-        <div class="card-title" data-i18n="chart_title">Sprzedaż — ostatnie 7 dni</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px">Dzień</button>
-          <button class="btn btn-primary" style="padding:5px 10px;font-size:11px">Tydzień</button>
-          <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px">Miesiąc</button>
+        <div class="card-title" id="dashChartTitle">Sprzedaż — ostatnie 7 dni</div>
+        <div style="display:flex;gap:6px" id="dashChartBtns">
+          <button class="btn btn-ghost"   style="padding:5px 10px;font-size:11px" onclick="setChartRange('day',this)">Dzień</button>
+          <button class="btn btn-primary" style="padding:5px 10px;font-size:11px" onclick="setChartRange('week',this)">Tydzień</button>
+          <button class="btn btn-ghost"   style="padding:5px 10px;font-size:11px" onclick="setChartRange('month',this)">Miesiąc</button>
         </div>
       </div>
-      <div id="dashChartWrap">
-        <div id="dashChartGhost" style="padding:16px 4px">
-          <div style="display:flex;align-items:flex-end;gap:6px;height:140px">
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div class="ghost-chart" style="width:100%;height:30%"></div><div class="ghost-chart" style="width:60%;height:8px;margin-top:4px"></div></div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div class="ghost-chart" style="width:100%;height:55%"></div><div class="ghost-chart" style="width:60%;height:8px;margin-top:4px"></div></div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div class="ghost-chart" style="width:100%;height:75%"></div><div class="ghost-chart" style="width:60%;height:8px;margin-top:4px"></div></div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div class="ghost-chart" style="width:100%;height:40%"></div><div class="ghost-chart" style="width:60%;height:8px;margin-top:4px"></div></div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div class="ghost-chart" style="width:100%;height:90%"></div><div class="ghost-chart" style="width:60%;height:8px;margin-top:4px"></div></div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div class="ghost-chart" style="width:100%;height:60%"></div><div class="ghost-chart" style="width:60%;height:8px;margin-top:4px"></div></div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div class="ghost-chart" style="width:100%;height:45%"></div><div class="ghost-chart" style="width:60%;height:8px;margin-top:4px"></div></div>
-          </div>
-          <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text3)">📊 Tak będzie wyglądał Twój wykres po synchronizacji z Vinted</div>
-          <div style="text-align:center;margin-top:8px"><button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="showPage('sync',document.querySelector('.nav-item'))">⚡ Połącz Vinted</button></div>
-        </div>
-      </div>
+      <div id="dashChartWrap" style="padding:8px 0 4px"></div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title" data-i18n="sources_title">Źródła sprzedaży</div></div>
-      <div id="sourcesDonut" style="padding:10px">
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div class="ghost-chart" style="height:80px;border-radius:50%;width:80px;margin:0 auto"></div>
-          <div class="ghost-chart" style="height:12px;width:70%;margin:4px auto;border-radius:6px"></div>
-          <div class="ghost-chart" style="height:12px;width:50%;margin:0 auto;border-radius:6px"></div>
-        </div>
-        <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--text3)">Połącz Vinted aby zobaczyć podział</div>
-      </div>
+      <div class="card-header"><div class="card-title">Źródła sprzedaży</div></div>
+      <div id="sourcesDonut" style="padding:8px 0"></div>
     </div>
   </div>
 
+  <!-- TOP + PROGNOZA + AKTYWNOŚĆ -->
   <div class="grid-2">
     <div class="card">
       <div class="card-header">
-        <div class="card-title">Top Produkty — Profit per Item</div>
-        <span class="badge badge-purple">ten miesiąc</span>
+        <div class="card-title">🏆 Top produkty</div>
+        <span class="badge badge-purple" id="topProdPeriod">ten miesiąc</span>
       </div>
-      <div id="topProductsList">
-        <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
-          <div style="display:flex;gap:10px;align-items:center"><div class="ghost-chart" style="width:24px;height:24px;border-radius:50%;flex-shrink:0"></div><div style="flex:1"><div class="ghost-chart" style="height:12px;width:80%;border-radius:6px;margin-bottom:4px"></div><div class="ghost-chart" style="height:10px;width:50%;border-radius:6px"></div></div></div>
-          <div style="display:flex;gap:10px;align-items:center"><div class="ghost-chart" style="width:24px;height:24px;border-radius:50%;flex-shrink:0"></div><div style="flex:1"><div class="ghost-chart" style="height:12px;width:65%;border-radius:6px;margin-bottom:4px"></div><div class="ghost-chart" style="height:10px;width:40%;border-radius:6px"></div></div></div>
-          <div style="display:flex;gap:10px;align-items:center"><div class="ghost-chart" style="width:24px;height:24px;border-radius:50%;flex-shrink:0"></div><div style="flex:1"><div class="ghost-chart" style="height:12px;width:70%;border-radius:6px;margin-bottom:4px"></div><div class="ghost-chart" style="height:10px;width:35%;border-radius:6px"></div></div></div>
-        </div>
-        <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--text3)">Top produkty pojawią się po synchronizacji</div>
-      </div>
+      <div id="topProductsList"></div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="forecast-box">
-        <div class="forecast-label" data-i18n="forecast_label">🔮 Prognoza na ten miesiąc</div>
-        <div class="forecast-value">— zł</div>
-        <div class="forecast-sub">Dodaj sprzedaże aby zobaczyć prognozę</div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">Aktywność</div></div>
-        <div class="empty-state" style="padding:16px">
-          <div class="empty-icon" style="font-size:28px">😴</div>
-          <div class="empty-sub" style="font-size:12px">Brak aktywności — zacznij dodawać dane</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- PROGNOZA -->
+      <div class="forecast-box" id="forecastBox">
+        <div class="forecast-label">🔮 Prognoza na ten miesiąc</div>
+        <div class="forecast-value" id="d_forecast">— zł</div>
+        <div class="forecast-sub" id="d_forecast_sub">Dodaj sprzedaże aby zobaczyć prognozę</div>
+        <div id="forecastBar" style="margin-top:10px;display:none">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px">
+            <span id="forecastBarLabel">postęp miesiąca</span>
+            <span id="forecastBarPct">—</span>
+          </div>
+          <div class="tax-bar-wrap"><div class="tax-bar" id="forecastBarFill" style="width:0%;background:linear-gradient(90deg,var(--purple),var(--bordeaux-light))"></div></div>
         </div>
+      </div>
+      <!-- AKTYWNOŚĆ / STREAK -->
+      <div class="card" style="padding:14px">
+        <div class="card-header" style="margin-bottom:10px"><div class="card-title">⚡ Aktywność (ostatnie 14 dni)</div></div>
+        <div id="activityHeatmap" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        <div id="streakBadge" style="margin-top:10px;font-size:12px;color:var(--text3)"></div>
       </div>
     </div>
   </div>
 
-  <!-- ONBOARDING -->
-  <div class="card" style="border:1px solid rgba(124,58,237,0.3);background:linear-gradient(135deg,rgba(124,58,237,0.05),rgba(136,19,55,0.05))">
+  <!-- OSTATNIE SPRZEDAŻE (z Vinted + ręczne) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 Ostatnie sprzedaże</div>
+      <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="showPage('sales',document.querySelector('.nav-item'))">Zobacz wszystkie →</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Produkt</th><th>Platforma</th><th>Cena</th><th>Zysk</th><th>Status</th><th>Data</th></tr></thead>
+        <tbody id="dashRecentSales"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PODSUMOWANIE ROKU -->
+  <div class="card" id="yearSummaryCard" style="display:none">
+    <div class="card-header">
+      <div class="card-title">📅 Podsumowanie roku <span id="yearSummaryYear"></span></div>
+      <span class="badge badge-purple">rok do dziś</span>
+    </div>
+    <div id="yearSummaryGrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px"></div>
+  </div>
+
+  <!-- ONBOARDING (tylko gdy brak danych) -->
+  <div id="onboardingCard" class="card" style="border:1px solid rgba(124,58,237,0.3);background:linear-gradient(135deg,rgba(124,58,237,0.05),rgba(136,19,55,0.05))">
     <div class="card-header">
       <div class="card-title" style="color:var(--purple-light)">🚀 Pierwsze kroki — skonfiguruj AllInOne</div>
     </div>
@@ -892,10 +919,10 @@ select option { background:var(--bg3); }
         <div style="font-size:13px;font-weight:600;color:var(--text)">Połącz Vinted</div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px">Synchronizuj zamówienia</div>
       </div>
-      <div class="auto-card" style="flex-direction:column;text-align:center;padding:16px;cursor:pointer" onclick="showPage('products',document.querySelector('.nav-item'))">
-        <div style="font-size:28px;margin-bottom:8px">📦</div>
-        <div style="font-size:13px;font-weight:600;color:var(--text)">Dodaj produkt</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Stwórz magazyn</div>
+      <div class="auto-card" style="flex-direction:column;text-align:center;padding:16px;cursor:pointer" onclick="openModal('addSaleModal')">
+        <div style="font-size:28px;margin-bottom:8px">➕</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Dodaj sprzedaż</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Wpisz ręcznie</div>
       </div>
       <div class="auto-card" style="flex-direction:column;text-align:center;padding:16px;cursor:pointer" onclick="showPage('costs',document.querySelector('.nav-item'))">
         <div style="font-size:28px;margin-bottom:8px">💳</div>
@@ -904,7 +931,7 @@ select option { background:var(--bg3); }
       </div>
       <div class="auto-card" style="flex-direction:column;text-align:center;padding:16px;cursor:pointer" onclick="showPage('tax',document.querySelector('.nav-item'))">
         <div style="font-size:28px;margin-bottom:8px">🧾</div>
-        <div style="font-size:13px;font-weight:600;color:var(--text)">Ustaw limit podatkowy</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Limit podatkowy</div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px">Kontroluj finanse</div>
       </div>
     </div>
@@ -914,13 +941,26 @@ select option { background:var(--bg3); }
 <!-- ===== SPRZEDAŻ ===== -->
 <section class="page" id="page-sales">
   <div class="breadcrumb"><span data-i18n="nav_sales">Sprzedaż</span></div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <select style="width:auto;padding:8px 12px"><option>Wszystkie platformy</option><option>Vinted</option><option>Etsy</option><option>eBay</option></select>
-      <select style="width:auto;padding:8px 12px"><option>Ten miesiąc</option><option>Poprzedni miesiąc</option><option>Ostatnie 3 miesiące</option><option>Cały rok</option></select>
-      <select style="width:auto;padding:8px 12px"><option>Wszystkie statusy</option><option>Sprzedane</option><option>Wysłane</option><option>Dostarczone</option><option>Zwrot</option></select>
+
+  <!-- QUICK ADD -->
+  <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(136,19,55,.04));border:1px solid rgba(124,58,237,.2)">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px">⚡ Szybkie dodanie</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:3;min-width:160px"><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:3px">Nazwa produktu</label><input type="text" id="qa_name" placeholder="np. Nike hoodie M" style="width:100%"></div>
+      <div style="flex:1;min-width:90px"><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:3px">Cena (zł)</label><input type="number" id="qa_price" placeholder="120" style="width:100%"></div>
+      <div style="flex:1;min-width:100px"><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:3px">Platforma</label><select id="qa_platform" style="width:100%"><option>Vinted</option><option>Etsy</option><option>eBay</option><option>OLX</option><option>Inne</option></select></div>
+      <button class="btn btn-primary" onclick="quickAddSale()" style="white-space:nowrap;align-self:flex-end">✅ Dodaj</button>
+      <button class="btn btn-ghost" onclick="openModal('addSaleModal')" style="white-space:nowrap;align-self:flex-end">Szczegóły +</button>
     </div>
-    <button class="btn btn-primary" onclick="openModal('addSaleModal')">+ Dodaj sprzedaż</button>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <select id="filterPlatform" style="width:auto;padding:8px 12px" onchange="renderSales()"><option value="">Wszystkie platformy</option><option>Vinted</option><option>Etsy</option><option>eBay</option><option>OLX</option></select>
+      <select id="filterPeriod" style="width:auto;padding:8px 12px" onchange="renderSales()"><option value="">Wszystkie okresy</option><option value="month">Ten miesiąc</option><option value="prev">Poprzedni miesiąc</option><option value="year">Ten rok</option></select>
+      <select id="filterStatus" style="width:auto;padding:8px 12px" onchange="renderSales()"><option value="">Wszystkie statusy</option><option>Sprzedane</option><option>Wysłane</option><option>Dostarczone</option><option>Zwrot</option></select>
+    </div>
+    <div style="font-size:13px;color:var(--text3)" id="salesCountLabel"></div>
   </div>
   <div class="card">
     <div class="table-wrap">
@@ -970,7 +1010,7 @@ select option { background:var(--bg3); }
     <div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div style="font-size:14px;color:var(--text2)" id="invCount">0 produktów w magazynie</div>
-        <button class="btn btn-primary" onclick="openModal('addProductModal')">+ Dodaj produkt</button>
+        <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="copyAsPost()" title="Skopiuj zaznaczone produkty jako post do Instagrama/FB">📋 Kopiuj jako post</button><button class="btn btn-primary" onclick="openModal('addProductModal')">+ Dodaj produkt</button></div>
       </div>
       <div id="inventoryGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
         <div style="border:2px dashed var(--border);background:transparent;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;min-height:140px;padding:16px;text-align:center" onclick="openModal('addProductModal')">
@@ -1484,6 +1524,35 @@ select option { background:var(--bg3); }
 
 
 
+
+<!-- ===== PODSUMOWANIE ROKU ===== -->
+<section class="page" id="page-year">
+  <div class="breadcrumb">📅 Podsumowanie roku</div>
+  <div class="stats-grid" style="margin-bottom:20px">
+    <div class="stat-card purple"><div class="stat-icon">💰</div><div class="stat-label">Przychód roczny</div><div class="stat-value" id="yr_income">— zł</div></div>
+    <div class="stat-card bordeaux"><div class="stat-icon">💳</div><div class="stat-label">Koszty roczne</div><div class="stat-value" id="yr_costs">— zł</div></div>
+    <div class="stat-card green"><div class="stat-icon">✨</div><div class="stat-label">Zysk netto</div><div class="stat-value" id="yr_profit">— zł</div></div>
+    <div class="stat-card orange"><div class="stat-icon">🛒</div><div class="stat-label">Sprzedaży</div><div class="stat-value" id="yr_count">0</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Przychód miesiąc po miesiącu</div></div>
+      <div id="yearMonthChart" style="padding:8px 0"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🏆 Top 5 produktów roku</div></div>
+      <div id="yearTopProducts"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><div class="card-title">📋 Wszystkie miesiące</div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Miesiąc</th><th>Przychód</th><th>Sprzedaży</th><th>Śr. cena</th><th>Koszty</th><th>Zysk</th></tr></thead>
+      <tbody id="yearMonthTable"></tbody>
+    </table></div>
+  </div>
+</section>
+
 </main>
 </div><!-- end #app -->
 
@@ -1497,7 +1566,7 @@ select option { background:var(--bg3); }
     <div class="grid-2" style="gap:12px;margin-bottom:0">
       <div class="form-group"><label>Nazwa produktu</label><input type="text" id="s_name" placeholder="np. Kurtka vintage"></div>
       <div class="form-group"><label>Platforma</label><select id="s_platform"><option>Vinted</option><option>Etsy</option><option>eBay</option><option>Inne</option></select></div>
-      <div class="form-group"><label>Cena sprzedaży (zł)</label><input type="number" id="s_price" placeholder="0"></div>
+      <div class="form-group"><label>Cena sprzedaży (zł)</label><input type="number" id="s_price" placeholder="0"><div id="priceSuggestion" style="display:none;font-size:11px;color:var(--purple-light);margin-top:4px;cursor:pointer;padding:4px 8px;background:rgba(124,58,237,.1);border-radius:6px"></div></div>
       <div class="form-group"><label>Koszt zakupu (zł)</label><input type="number" id="s_cost" placeholder="0"></div>
       <div class="form-group"><label>Koszt wysyłki (zł)</label><input type="number" id="s_ship" placeholder="0"></div>
       <div class="form-group"><label>Status</label><select id="s_status"><option>Sprzedane</option><option>Wysłane</option><option>Dostarczone</option><option>Zwrot</option></select></div>
@@ -1602,6 +1671,35 @@ select option { background:var(--bg3); }
 
 <!-- ==================== JAVASCRIPT ==================== -->
 <script>
+
+// ===== GLOBAL HELPERS =====
+function fmt(n, decimals=0) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Math.round(n * Math.pow(10, decimals)) / Math.pow(10, decimals);
+}
+function fmtZl(n) {
+  const v = fmt(n, 0);
+  return v === '—' ? '— zł' : v.toLocaleString('pl-PL') + ' zł';
+}
+function fmtPct(n) { return fmt(n, 1) + '%'; }
+
+// Bezpieczny parseFloat
+function pf(x) { return parseFloat(x) || 0; }
+
+// Parsuj datę dd.mm.yyyy lub dd.mm.yyyy HH:MM
+function parseDate(str) {
+  if (!str) return null;
+  const d = (str+'').split(' ')[0].split('.');
+  if (d.length !== 3) return null;
+  return new Date(+d[2], +d[1]-1, +d[0]);
+}
+function sameDay(d1, d2) {
+  return d1 && d2 && d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth() && d1.getDate()===d2.getDate();
+}
+function sameMonth(d1, d2) {
+  return d1 && d2 && d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth();
+}
+
 // ===== STATE =====
 let appState = {
   user: null,
@@ -1739,8 +1837,9 @@ function showPage(id, el) {
     dashboard:'Dashboard', sales:'Sprzedaż', products:'Produkty',
     inventory:'Magazyn', tax:'Podatki', costs:'Koszty',
     calculator:'Kalkulator ceny', stats:'Statystyki', automations:'Automatyzacje',
-    scanner:'Skaner rynku', planner:'Planer', sync:'Sync Vinted',
-    integrations:'Integracje', reports:'Raporty', settings:'Ustawienia'
+    scanner:'Skaner rynku', planner:'Planer', 'sync':'Sync Vinted',
+    integrations:'Integracje', reports:'Raporty', settings:'Ustawienia',
+    year:'Podsumowanie roku'
   };
   document.getElementById('topbarTitle').textContent = titles[id] || id;
 }
@@ -1866,32 +1965,9 @@ function renderAll() {
   updateTaxPage();
   updateReports();
   updateStats();
+  updateYearPage();
 }
 
-function renderSales() {
-  const tbody = document.getElementById('salesTableBody');
-  if (!appState.sales.length) {
-    tbody.innerHTML = '<tr class="table-empty"><td colspan="10">Brak sprzedaży. Kliknij <strong>+ Dodaj sprzedaż</strong> lub zsynchronizuj Vinted.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = appState.sales.map(s => `
-    <tr>
-      <td>${s.name}</td>
-      <td><span class="badge platform-${(s.platform||'inne').toLowerCase()}">${s.platform}</span></td>
-      <td>${s.price} zł</td>
-      <td>${s.cost||0} zł</td>
-      <td>${s.comm||0} zł</td>
-      <td>${s.ship||0} zł</td>
-      <td style="color:${(s.profit||0)>=0?'#34d399':'#f87171'};font-weight:700">${(s.profit||0)>=0?'+':''}${s.profit||0} zł</td>
-      <td><span class="badge ${statusBadge(s.status)}">${s.status}</span></td>
-      <td>${s.date}</td>
-      <td style="white-space:nowrap">
-        <button onclick="openEditSale(${s.id})" style="background:none;border:none;cursor:pointer;color:var(--purple-light);font-size:14px;padding:2px 6px" title="Edytuj">✏️</button>
-        <button onclick="deleteSale(${s.id})" style="background:none;border:none;cursor:pointer;color:#f87171;font-size:14px;padding:2px 6px" title="Usuń">🗑️</button>
-      </td>
-    </tr>
-  `).join('');
-}
 
 function renderProducts() {
   const tbody = document.getElementById('productsTableBody');
@@ -1986,59 +2062,339 @@ function renderCosts() {
   document.getElementById('c_net').textContent = (income - monthCosts) + ' zł';
 }
 
+// aktywny zakres wykresu
+let dashChartRange = 'week';
+
+function setChartRange(range, btn) {
+  dashChartRange = range;
+  document.querySelectorAll('#dashChartBtns button').forEach(b => {
+    b.className = 'btn btn-ghost';
+    b.style.padding = '5px 10px';
+    b.style.fontSize = '11px';
+  });
+  if (btn) { btn.className = 'btn btn-primary'; btn.style.padding='5px 10px'; btn.style.fontSize='11px'; }
+  const titles = {day:'Sprzedaż — ostatnie 24h', week:'Sprzedaż — ostatnie 7 dni', month:'Sprzedaż — ostatnie 30 dni'};
+  const el = document.getElementById('dashChartTitle');
+  if (el) el.textContent = titles[range] || titles.week;
+  renderDashChart();
+}
+
+function renderDashChart() {
+  const wrap = document.getElementById('dashChartWrap');
+  if (!wrap) return;
+  const all  = getAllSales();
+  const now  = new Date();
+  let days   = dashChartRange === 'day' ? 1 : dashChartRange === 'month' ? 30 : 7;
+  // Build buckets
+  const buckets = [];
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date(now); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
+    const label = days===1
+      ? d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})
+      : days===7
+        ? ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][d.getDay()]
+        : d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');
+    const rev = all.filter(s => {
+      const sd = parseDate(s.date);
+      return sd && sameDay(sd, d);
+    }).reduce((s,x) => s+pf(x.price), 0);
+    buckets.push({label, rev: Math.round(rev)});
+  }
+  const maxRev = Math.max(...buckets.map(b=>b.rev), 1);
+  if (maxRev === 0) {
+    wrap.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--text3);font-size:13px">Brak sprzedaży w tym okresie.<br><button class="btn btn-primary" style="margin-top:10px;font-size:12px" onclick="showPage(\'sync\',document.querySelector(\'.nav-item\'))">⚡ Synchronizuj Vinted</button></div>';
+    return;
+  }
+  wrap.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:150px;padding:0 4px">' +
+    buckets.map(b => {
+      const pct = Math.round(b.rev / maxRev * 100);
+      const isToday = b.label === ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][now.getDay()];
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;cursor:default" title="${b.rev} zł">
+        ${b.rev > 0 ? `<div style="font-size:9px;color:var(--text3)">${b.rev} zł</div>` : ''}
+        <div style="width:100%;border-radius:4px 4px 0 0;background:${isToday ? 'var(--grad)' : 'var(--purple)'};opacity:${b.rev>0?1:0.2};transition:height .3s" data-pct="${pct}" style="height:${Math.max(pct,2)}%"></div>
+        <div style="font-size:10px;color:${isToday?'var(--purple-light)':'var(--text3)'};white-space:nowrap">${b.label}</div>
+      </div>`;
+    }).join('') +
+  '</div>';
+  // animate bars
+  requestAnimationFrame(() => {
+    wrap.querySelectorAll('[data-pct]').forEach(el => {
+      el.style.height = el.dataset.pct + '%';
+    });
+  });
+}
+
+function renderSources(all) {
+  const wrap = document.getElementById('sourcesDonut');
+  if (!wrap) return;
+  const counts = {};
+  all.forEach(s => { const p = s.platform||'Inne'; counts[p] = (counts[p]||0) + pf(s.price); });
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const total = entries.reduce((s,[,v])=>s+v,0) || 1;
+  const colors = ['var(--purple)','var(--bordeaux)','#f59e0b','#34d399','#60a5fa'];
+  if (!entries.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Brak danych.<br>Połącz Vinted lub dodaj sprzedaże.</div>';
+    return;
+  }
+  wrap.innerHTML = entries.map(([name,val],i) => {
+    const pct = Math.round(val/total*100);
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="width:10px;height:10px;border-radius:50%;flex-shrink:0;background:${colors[i%colors.length]}"></div>
+      <div style="flex:1;font-size:12px;color:var(--text2)">${name}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--text)">${pct}%</div>
+      <div style="font-size:11px;color:var(--text3)">${fmtZl(val)}</div>
+    </div>
+    <div class="tax-bar-wrap" style="margin-bottom:8px;margin-top:-6px"><div style="height:100%;border-radius:4px;background:${colors[i%colors.length]};width:${pct}%"></div></div>`;
+  }).join('');
+}
+
+function renderTopProducts(all) {
+  const el = document.getElementById('topProductsList');
+  if (!el) return;
+  const now = new Date();
+  const month = all.filter(s => { const d=parseDate(s.date); return d && sameMonth(d,now); });
+  const map = {};
+  month.forEach(s => {
+    const k = s.name;
+    if (!map[k]) map[k] = {name:k, total:0, count:0};
+    map[k].total += pf(s.price);
+    map[k].count++;
+  });
+  const top = Object.values(map).sort((a,b)=>b.total-a.total).slice(0,5);
+  if (!top.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:var(--text3)">Brak sprzedaży w tym miesiącu.<br>Synchronizuj Vinted aby zobaczyć top produkty.</div>';
+    return;
+  }
+  el.innerHTML = top.map((p,i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border2)">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0">${i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+        <div style="font-size:11px;color:var(--text3)">${p.count}× sprzedane</div>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--purple-light);white-space:nowrap">${fmtZl(p.total)}</div>
+    </div>`).join('');
+}
+
+function renderForecast(all) {
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const dayOfMonth  = now.getDate();
+  const monthSales  = all.filter(s => { const d=parseDate(s.date); return d && sameMonth(d,now); });
+  const monthRev    = monthSales.reduce((s,x)=>s+pf(x.price),0);
+  const forecast    = dayOfMonth > 0 ? Math.round(monthRev / dayOfMonth * daysInMonth) : 0;
+  const el = document.getElementById('d_forecast');
+  const sub = document.getElementById('d_forecast_sub');
+  const bar = document.getElementById('forecastBar');
+  const barFill = document.getElementById('forecastBarFill');
+  const barPct = document.getElementById('forecastBarPct');
+  if (el) el.textContent = monthRev > 0 ? fmtZl(forecast) : '— zł';
+  if (sub) sub.textContent = monthRev > 0
+    ? `bazując na ${dayOfMonth} dniach · ${fmtZl(monthRev)} do teraz`
+    : 'Dodaj sprzedaże aby zobaczyć prognozę';
+  if (bar) bar.style.display = monthRev > 0 ? 'block' : 'none';
+  if (barFill) barFill.style.width = Math.min(100, Math.round(dayOfMonth/daysInMonth*100)) + '%';
+  if (barPct) barPct.textContent = Math.round(dayOfMonth/daysInMonth*100) + '% miesiąca minęło';
+}
+
+function renderActivityHeatmap(all) {
+  const el = document.getElementById('activityHeatmap');
+  const streak = document.getElementById('streakBadge');
+  if (!el) return;
+  const now = new Date();
+  const days = 14;
+  const cells = [];
+  let currentStreak = 0;
+  let checkStreak = true;
+  for (let i=days-1; i>=0; i--) {
+    const d = new Date(now); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
+    const sales = all.filter(s => { const sd=parseDate(s.date); return sd && sameDay(sd,d); });
+    const rev = sales.reduce((s,x)=>s+pf(x.price),0);
+    const hasActivity = sales.length > 0;
+    if (checkStreak) {
+      if (hasActivity || i===0) currentStreak++;
+      else checkStreak = false;
+    }
+    const day = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][d.getDay()];
+    const label = d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');
+    cells.push(`<div title="${label}: ${rev>0?fmtZl(rev):'brak sprzedaży'}" style="width:32px;height:32px;border-radius:6px;background:${rev>0?'var(--purple)':'var(--bg4)'};opacity:${rev>0?Math.min(0.4+rev/200,1):0.4};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:default;border:1px solid var(--border2)">
+      <div style="font-size:8px;color:${rev>0?'#fff':'var(--text3)'}">${day}</div>
+      <div style="font-size:7px;color:${rev>0?'rgba(255,255,255,.7)':'var(--text3)'}">${d.getDate()}</div>
+    </div>`);
+  }
+  el.innerHTML = cells.join('');
+  if (streak && currentStreak > 1) {
+    streak.innerHTML = `🔥 <strong>${currentStreak} dni</strong> z rzędu sprzedajesz! Tak trzymaj!`;
+    streak.style.color = '#f59e0b';
+  } else if (streak) {
+    streak.innerHTML = 'Sprzedaj coś dziś, żeby zacząć serię 🔥';
+    streak.style.color = 'var(--text3)';
+  }
+}
+
+function renderRecentSales(all) {
+  const tb = document.getElementById('dashRecentSales');
+  if (!tb) return;
+  const recent = [...all].sort((a,b)=>{
+    const da = parseDate(a.date)||new Date(0);
+    const db = parseDate(b.date)||new Date(0);
+    return db-da;
+  }).slice(0,8);
+  if (!recent.length) {
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Brak sprzedaży — synchronizuj Vinted lub dodaj ręcznie</td></tr>';
+    return;
+  }
+  tb.innerHTML = recent.map(s=>`<tr>
+    <td style="font-weight:500">${s.name||'—'}</td>
+    <td><span class="badge platform-${(s.platform||'inne').toLowerCase()}">${s.platform||'—'}</span></td>
+    <td style="font-weight:700;color:var(--purple-light)">${fmtZl(pf(s.price))}</td>
+    <td style="color:#34d399">${fmtZl(pf(s.profit)||pf(s.price))}</td>
+    <td><span class="badge ${statusBadge(s.status)}">${s.status||'—'}</span></td>
+    <td style="color:var(--text3);font-size:12px">${(s.date||'').split(' ')[0]||'—'}</td>
+  </tr>`).join('');
+}
+
+function renderYearSummary(all) {
+  const card = document.getElementById('yearSummaryCard');
+  const grid = document.getElementById('yearSummaryGrid');
+  const yearEl = document.getElementById('yearSummaryYear');
+  if (!card || !grid) return;
+  const now = new Date();
+  const year = now.getFullYear();
+  if (yearEl) yearEl.textContent = year;
+  const months = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+  const rows = months.map((name,mi) => {
+    const rev = all.filter(s=>{ const d=parseDate(s.date); return d && d.getFullYear()===year && d.getMonth()===mi; }).reduce((s,x)=>s+pf(x.price),0);
+    return {name, rev};
+  });
+  const maxRev = Math.max(...rows.map(r=>r.rev), 1);
+  const hasData = rows.some(r=>r.rev>0);
+  card.style.display = hasData ? 'block' : 'none';
+  if (!hasData) return;
+  grid.innerHTML = rows.map(r=>`
+    <div style="background:var(--bg4);border-radius:10px;padding:10px;text-align:center;border:1px solid ${r.rev>0?'var(--border)':'var(--border2)'}">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${r.name}</div>
+      <div style="font-size:14px;font-weight:700;color:${r.rev>0?'var(--text)':'var(--text3)'}">${r.rev>0?fmtZl(r.rev):'—'}</div>
+      <div class="tax-bar-wrap" style="margin-top:5px"><div style="height:100%;border-radius:4px;background:var(--grad);width:${Math.round(r.rev/maxRev*100)}%"></div></div>
+    </div>`).join('');
+}
+
+function renderLimitBanner(all) {
+  const banner = document.getElementById('limitBanner');
+  if (!banner) return;
+  const now = new Date();
+  const limit = appState.taxLimit || 3499;
+  const monthRev = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
+  const pct = Math.min(Math.round(monthRev/limit*100),100);
+  // Always show
+  banner.style.display = 'flex';
+  document.getElementById('limitBannerBar').style.width = pct+'%';
+  document.getElementById('limitBannerPct').textContent = pct+'%';
+  const remaining = Math.max(0, limit - monthRev);
+  if (pct >= 100) {
+    document.getElementById('limitBannerIcon').textContent = '🔴';
+    document.getElementById('limitBannerText').textContent = 'Przekroczono limit miesięczny!';
+    document.getElementById('limitBannerSub').textContent = `${fmtZl(monthRev)} / ${fmtZl(limit)} — skonsultuj się z księgowym`;
+    document.getElementById('limitBannerBar').style.background = '#ef4444';
+  } else if (pct >= 80) {
+    document.getElementById('limitBannerIcon').textContent = '🟡';
+    document.getElementById('limitBannerText').textContent = `Limit podatkowy: ${pct}%`;
+    document.getElementById('limitBannerSub').textContent = `${fmtZl(monthRev)} z ${fmtZl(limit)} — pozostało ${fmtZl(remaining)}`;
+    document.getElementById('limitBannerBar').style.background = 'linear-gradient(90deg,#f59e0b,#ef4444)';
+  } else {
+    document.getElementById('limitBannerIcon').textContent = '🟢';
+    document.getElementById('limitBannerText').textContent = `Limit miesięczny: ${fmtZl(monthRev)} / ${fmtZl(limit)}`;
+    document.getElementById('limitBannerSub').textContent = `Pozostało ${fmtZl(remaining)} do limitu działalności nierejestrowanej`;
+    document.getElementById('limitBannerBar').style.background = 'linear-gradient(90deg,var(--purple),var(--bordeaux-light))';
+  }
+  // notification dot
+  const dot = document.getElementById('notifDot');
+  if (dot) dot.style.display = pct >= 80 ? 'block' : 'none';
+}
+
 function updateDashboard() {
-  const all   = getAllSales();
-  const today = new Date().toLocaleDateString('pl-PL');
-  const todayRev    = all.filter(s=>(s.date||'').split(' ')[0]===today).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-  const monthRev    = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-  const costTotal   = (appState.costs||[]).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
-  document.getElementById('d_today').textContent  = todayRev.toFixed(2) + ' zł';
-  document.getElementById('d_month').textContent  = monthRev.toFixed(2) + ' zł';
-  document.getElementById('d_profit').textContent = (monthRev - costTotal).toFixed(2) + ' zł';
-  document.getElementById('d_orders').textContent = all.length;
+  const all      = getAllSales();
+  const now      = new Date();
+  const today    = now.toLocaleDateString('pl-PL');
+  const costTotal= (appState.costs||[]).reduce((s,c)=>s+pf(c.amount),0);
+  const todaySales  = all.filter(s=>(s.date||'').split(' ')[0]===today);
+  const monthSales  = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); });
+  const todayRev    = todaySales.reduce((s,x)=>s+pf(x.price),0);
+  const monthRev    = monthSales.reduce((s,x)=>s+pf(x.price),0);
+  const monthCosts  = costTotal;
+  const monthProfit = monthRev - monthCosts;
+  const avgPrice    = all.length ? monthRev/Math.max(monthSales.length,1) : 0;
+
+  document.getElementById('d_today').textContent    = fmtZl(todayRev);
+  document.getElementById('d_today_sub').textContent= todaySales.length + ' sprzedaż' + (todaySales.length===1?'':'y');
+  document.getElementById('d_month').textContent    = fmtZl(monthRev);
+  document.getElementById('d_month_sub').textContent= monthSales.length + ' sprzedaż' + (monthSales.length===1?'':'y') + ' w tym mies.';
+  document.getElementById('d_profit').textContent   = fmtZl(monthProfit);
+  document.getElementById('d_profit_sub').textContent= costTotal > 0 ? 'po odliczeniu ' + fmtZl(costTotal) + ' kosztów' : 'brak kosztów w tym mies.';
+  document.getElementById('d_orders').textContent   = all.length;
+  document.getElementById('d_orders_sub').textContent= 'śr. ' + (all.length ? fmtZl(Math.round(monthRev/Math.max(monthSales.length,1))) : '—') + '/szt';
+
   const s_avg = document.getElementById('s_avg');
-  if (s_avg) s_avg.textContent = all.length ? Math.round(monthRev/all.length)+' zł' : '— zł';
-  const s_total = document.getElementById('s_total');
-  if (s_total) s_total.textContent = appState.products.length;
+  if (s_avg) s_avg.textContent = fmtZl(avgPrice);
+
+  // Onboarding card — pokaż tylko gdy brak danych
+  const ob = document.getElementById('onboardingCard');
+  if (ob) ob.style.display = all.length === 0 ? 'block' : 'none';
+
+  // Render wszystkie sekcje dashboardu
+  renderDashChart();
+  renderSources(all);
+  renderTopProducts(all);
+  renderForecast(all);
+  renderActivityHeatmap(all);
+  renderRecentSales(all);
+  renderYearSummary(all);
+  renderLimitBanner(all);
 }
 
 function updateTaxPage() {
   const all    = getAllSales();
-  const income = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-  const costs  = (appState.costs||[]).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
-  document.getElementById('tax_month').textContent = income + ' zł';
-  document.getElementById('tax_year').textContent  = income + ' zł';
-  document.getElementById('taxIncome').value       = income;
-  document.getElementById('taxCosts').value        = costs;
+  const now    = new Date();
+  const income = all.reduce((s,x)=>s+pf(x.price),0);
+  const monthInc = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
+  const costs  = (appState.costs||[]).reduce((s,c)=>s+pf(c.amount),0);
+  const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setEl('tax_month', fmtZl(monthInc));
+  setEl('tax_year',  fmtZl(income));
+  const ti = document.getElementById('taxIncome'); if(ti) ti.value = Math.round(income);
+  const tc = document.getElementById('taxCosts');  if(tc) tc.value = Math.round(costs);
   calcTax();
-  // Limit bar
   const limit = appState.taxLimit || 3499;
-  const pct   = Math.min(Math.round(income/limit*100), 100);
-  document.getElementById('limitBar').style.width    = pct + '%';
-  document.getElementById('limitCurrent').textContent= income + ' zł';
-  document.getElementById('limitLeft').textContent   = Math.max(0, limit - income) + ' zł';
+  const pct   = Math.min(Math.round(monthInc/limit*100), 100);
+  const bar = document.getElementById('limitBar');
+  if (bar) bar.style.width = pct + '%';
+  setEl('limitCurrent', fmtZl(monthInc));
+  setEl('limitLeft', fmtZl(Math.max(0, limit-monthInc)));
   const badge = document.getElementById('limitBadge');
   const alert = document.getElementById('limitAlert');
   if (pct >= 100) {
-    badge.className = 'badge badge-red'; badge.textContent = '🔴 Przekroczono';
-    alert.className = 'alert-box alert-red'; alert.textContent = '🔴 Przekroczono limit działalności nierejestrowanej! Skonsultuj się z księgowym.';
+    if(badge){badge.className='badge badge-red';badge.textContent='🔴 Przekroczono';}
+    if(alert){alert.className='alert-box alert-red';alert.textContent='🔴 Przekroczono limit! Skonsultuj się z księgowym.';}
   } else if (pct >= 80) {
-    badge.className = 'badge badge-yellow'; badge.textContent = '🟡 Blisko limitu';
-    alert.className = 'alert-box alert-yellow'; alert.textContent = `🟡 Blisko limitu! Zostało Ci tylko ${limit-income} zł. Rozważ rejestrację działalności.`;
+    if(badge){badge.className='badge badge-yellow';badge.textContent='🟡 Blisko limitu';}
+    if(alert){alert.className='alert-box alert-yellow';alert.textContent=`🟡 Zostało Ci ${fmtZl(limit-monthInc)}. Rozważ rejestrację działalności.`;}
   } else {
-    badge.className = 'badge badge-green'; badge.textContent = '🟢 OK';
-    alert.className = 'alert-box alert-green'; alert.textContent = `🟢 Bezpiecznie — jesteś poniżej limitu działalności nierejestrowanej.`;
+    if(badge){badge.className='badge badge-green';badge.textContent='🟢 OK';}
+    if(alert){alert.className='alert-box alert-green';alert.textContent='🟢 Bezpiecznie — jesteś poniżej limitu.';}
   }
 }
 
 function updateReports() {
   const all    = getAllSales();
-  const income = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-  const costs  = (appState.costs||[]).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
-  document.getElementById('rpt_income').textContent = income.toFixed(2) + ' zł';
-  document.getElementById('rpt_costs').textContent  = costs.toFixed(2) + ' zł';
-  document.getElementById('rpt_profit').textContent = (income-costs).toFixed(2) + ' zł';
-  document.getElementById('rpt_sales').textContent  = all.length;
+  const income = all.reduce((s,x)=>s+pf(x.price),0);
+  const costs  = (appState.costs||[]).reduce((s,c)=>s+pf(c.amount),0);
+  const setEl = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  setEl('rpt_income', fmtZl(income));
+  setEl('rpt_costs',  fmtZl(costs));
+  setEl('rpt_profit', fmtZl(income-costs));
+  setEl('rpt_sales',  all.length);
 }
 
 // ===== TAX CALC =====
@@ -2902,30 +3258,270 @@ function exportExcel() {
 
 function updateStats() {
   const all = getAllSales();
-  const income = all.reduce((s,x)=>s+(parseFloat(x.price)||0),0);
+  const income = all.reduce((s,x)=>s+pf(x.price),0);
   const avgEl = document.getElementById('s_avg');
   const totalEl = document.getElementById('s_total');
-  if (avgEl) avgEl.textContent = all.length ? (income/all.length).toFixed(0)+' zł' : '— zł';
-  if (totalEl) totalEl.textContent = appState.products.length + all.length;
-  const d_today_sub = document.getElementById('d_today_sub');
-  const d_month_sub = document.getElementById('d_month_sub');
-  const todayCount = all.filter(s=>(s.date||'').split(' ')[0]===new Date().toLocaleDateString('pl-PL')).length;
-  if (d_today_sub) d_today_sub.textContent = todayCount ? todayCount + ' sprzedaży dziś' : 'Brak sprzedaży dziś';
-  if (d_month_sub) d_month_sub.textContent = all.length ? all.length + ' sprzedaży łącznie' : 'Brak danych';
-  const ghostEl = document.getElementById('dashChartGhost');
-  if (ghostEl) ghostEl.style.display = all.length > 0 ? 'none' : 'block';
-  // Tax limit notification check
-  const limit = appState.taxLimit || 3499;
-  const now = new Date();
-  const monthIncome = all.filter(s => {
-    const p = (s.date||'').split(' ')[0].split('.');
-    return p.length===3 && parseInt(p[1])-1===now.getMonth() && parseInt(p[2])===now.getFullYear();
-  }).reduce((s,x)=>s+(parseFloat(x.price)||0),0);
-  const pct = Math.round(monthIncome/limit*100);
-  const notifDot = document.getElementById('notifDot');
-  if (notifDot) notifDot.style.display = pct >= 80 ? 'block' : 'none';
+  if (avgEl) avgEl.textContent = all.length ? fmtZl(Math.round(income/all.length)) : '— zł';
+  if (totalEl) totalEl.textContent = appState.products.length;
+  // Sidebar plan badge
+  const plan = getPlan ? getPlan() : 'free';
+  const planBadge = document.getElementById('sidebarPlanBadge');
+  if (planBadge && typeof PLANS !== 'undefined') {
+    const p = PLANS[plan];
+    if (p) { planBadge.textContent = p.icon + ' ' + p.name; }
+  }
 }
 
+
+// ===== QUICK ADD SALE =====
+function quickAddSale() {
+  const name  = document.getElementById('qa_name').value.trim();
+  const price = parseFloat(document.getElementById('qa_price').value) || 0;
+  const platform = document.getElementById('qa_platform').value;
+  if (!name) { showToast('Wpisz nazwę produktu'); return; }
+  if (!price) { showToast('Wpisz cenę'); return; }
+  const sale = {
+    id: 'sale_' + Date.now(),
+    name, platform,
+    price: Math.round(price),
+    cost: 0, ship: 0, comm: Math.round(price * 0.05),
+    profit: Math.round(price * 0.95),
+    status: 'Sprzedane',
+    date: new Date().toLocaleDateString('pl-PL'),
+    buyer: '—'
+  };
+  appState.sales.unshift(sale);
+  saveState(); renderAll();
+  document.getElementById('qa_name').value = '';
+  document.getElementById('qa_price').value = '';
+  showToast('✅ Dodano: ' + name + ' — ' + fmtZl(price));
+}
+
+// ===== YEAR SUMMARY PAGE =====
+function updateYearPage() {
+  const all   = getAllSales();
+  const costs = appState.costs || [];
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const yearSales = all.filter(s=>{ const d=parseDate(s.date); return d && d.getFullYear()===year; });
+  const yearCosts = costs.filter(c=>{ const d=parseDate(c.date); return d && d.getFullYear()===year; });
+  const income = yearSales.reduce((s,x)=>s+pf(x.price),0);
+  const totalCosts = yearCosts.reduce((s,x)=>s+pf(x.amount),0);
+  const setEl = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  setEl('yr_income', fmtZl(income));
+  setEl('yr_costs',  fmtZl(totalCosts));
+  setEl('yr_profit', fmtZl(income-totalCosts));
+  setEl('yr_count',  yearSales.length);
+
+  // Month chart
+  const months = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+  const mData = months.map((name,mi)=>{
+    const rev = yearSales.filter(s=>{ const d=parseDate(s.date); return d && d.getMonth()===mi; }).reduce((s,x)=>s+pf(x.price),0);
+    const mc  = yearCosts.filter(x=>{ const d=parseDate(x.date); return d && d.getMonth()===mi; }).reduce((s,x)=>s+pf(x.amount),0);
+    const cnt = yearSales.filter(s=>{ const d=parseDate(s.date); return d && d.getMonth()===mi; }).length;
+    return {name, rev:Math.round(rev), mc:Math.round(mc), cnt};
+  });
+  const maxRev = Math.max(...mData.map(m=>m.rev), 1);
+  const chartEl = document.getElementById('yearMonthChart');
+  if (chartEl) {
+    chartEl.innerHTML = '<div style="display:flex;align-items:flex-end;gap:3px;height:120px">' +
+      mData.map(m=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="${m.name}: ${fmtZl(m.rev)}">
+        ${m.rev>0?`<div style="font-size:8px;color:var(--text3)">${m.rev}</div>`:''}
+        <div style="width:100%;border-radius:3px 3px 0 0;background:${m.rev>0?'linear-gradient(180deg,var(--purple),var(--bordeaux))':'var(--bg4)'};min-height:2px" style="height:${Math.max(2,Math.round(m.rev/maxRev*100))}%"></div>
+        <div style="font-size:9px;color:var(--text3)">${m.name}</div>
+      </div>`).join('') +
+    '</div>';
+  }
+
+  // Table
+  const tb = document.getElementById('yearMonthTable');
+  if (tb) {
+    tb.innerHTML = mData.map(m=>`<tr>
+      <td style="font-weight:600">${m.name} ${year}</td>
+      <td style="color:var(--purple-light);font-weight:700">${m.rev>0?fmtZl(m.rev):'—'}</td>
+      <td>${m.cnt||'—'}</td>
+      <td>${m.cnt>0?fmtZl(Math.round(m.rev/m.cnt)):'—'}</td>
+      <td style="color:#f87171">${m.mc>0?fmtZl(m.mc):'—'}</td>
+      <td style="color:#34d399;font-weight:600">${m.rev>0?fmtZl(m.rev-m.mc):'—'}</td>
+    </tr>`).join('') +
+    `<tr style="font-weight:800;background:var(--bg4)">
+      <td>SUMA</td><td style="color:var(--purple-light)">${fmtZl(income)}</td>
+      <td>${yearSales.length}</td>
+      <td>${yearSales.length>0?fmtZl(Math.round(income/yearSales.length)):'—'}</td>
+      <td style="color:#f87171">${fmtZl(totalCosts)}</td>
+      <td style="color:#34d399">${fmtZl(income-totalCosts)}</td>
+    </tr>`;
+  }
+
+  // Top products
+  const pMap = {};
+  yearSales.forEach(s=>{ const k=s.name; if(!pMap[k]) pMap[k]={name:k,total:0,count:0}; pMap[k].total+=pf(s.price); pMap[k].count++; });
+  const top = Object.values(pMap).sort((a,b)=>b.total-a.total).slice(0,5);
+  const tpEl = document.getElementById('yearTopProducts');
+  if (tpEl) {
+    if (!top.length) { tpEl.innerHTML = '<div class="empty-state" style="padding:20px"><div class="empty-icon">🏆</div><div class="empty-sub">Brak danych za ten rok</div></div>'; }
+    else tpEl.innerHTML = top.map((p,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border2)">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff">${i+1}</div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</div><div style="font-size:11px;color:var(--text3)">${p.count}× sprzedane</div></div>
+        <div style="font-weight:700;color:var(--purple-light)">${fmtZl(p.total)}</div>
+      </div>`).join('');
+  }
+}
+
+// ===== COPY AS POST =====
+function copyAsPost() {
+  const selected = Array.from(document.querySelectorAll('.prod-select:checked'));
+  let products = [];
+  if (selected.length > 0) {
+    products = selected.map(cb => {
+      const row = cb.closest('tr');
+      if (!row) return null;
+      const cells = row.querySelectorAll('td');
+      return { name: cells[1]?.textContent?.trim(), price: cells[3]?.textContent?.trim() };
+    }).filter(Boolean);
+  } else {
+    // Użyj produktów z magazynu
+    products = (appState.products || []).filter(p => p.status !== 'Sprzedany').slice(0,10).map(p => ({
+      name: p.name, price: fmtZl(p.sell || p.price || 0)
+    }));
+  }
+  if (!products.length) { showToast('Brak produktów do eksportu'); return; }
+  const NL = '\n';
+  const lines = products.map(p => '\u2705 ' + p.name + ' \u2014 ' + p.price).join(NL);
+  const post = '\uD83D\uDECD\uFE0F Do sprzedania:' + NL + NL + lines + NL + NL + '\uD83D\uDCE6 Wysyłam InPost/DPD' + NL + '\uD83D\uDC9A Zapraszam do obserwowania!';
+  navigator.clipboard.writeText(post).then(() => showToast('\uD83D\uDCCB Skopiowano gotowy post!'));
+}
+
+// ===== WORKING SALES FILTERS =====
+function renderSales() {
+  const tbody = document.getElementById('salesTableBody');
+  if (!tbody) return;
+  const all = getAllSales();
+  const platFilter   = (document.getElementById('filterPlatform')?.value || '').toLowerCase();
+  const periodFilter = document.getElementById('filterPeriod')?.value || '';
+  const statusFilter = (document.getElementById('filterStatus')?.value || '').toLowerCase();
+  const now = new Date();
+  let filtered = all.filter(s => {
+    if (platFilter && !(s.platform||'').toLowerCase().includes(platFilter)) return false;
+    if (statusFilter && !(s.status||'').toLowerCase().includes(statusFilter)) return false;
+    if (periodFilter) {
+      const d = parseDate(s.date);
+      if (!d) return false;
+      if (periodFilter === 'month' && !sameMonth(d, now)) return false;
+      if (periodFilter === 'prev') {
+        const prev = new Date(now.getFullYear(), now.getMonth()-1, 1);
+        if (!(d.getFullYear()===prev.getFullYear() && d.getMonth()===prev.getMonth())) return false;
+      }
+      if (periodFilter === 'year' && d.getFullYear() !== now.getFullYear()) return false;
+    }
+    return true;
+  });
+  const countLabel = document.getElementById('salesCountLabel');
+  if (countLabel) countLabel.textContent = `${filtered.length} z ${all.length} sprzedaży`;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr class="table-empty"><td colspan="10">Brak wyników. Zmień filtry lub <strong onclick="openModal(\'addSaleModal\')" style="cursor:pointer;color:var(--purple-light)">dodaj sprzedaż</strong>.</td></tr>';
+    return;
+  }
+  const sorted = [...filtered].sort((a,b)=>{
+    const da=parseDate(a.date)||new Date(0), db=parseDate(b.date)||new Date(0);
+    return db-da;
+  });
+  tbody.innerHTML = sorted.map(s => `
+    <tr>
+      <td style="font-weight:500">${s.name||'—'}</td>
+      <td><span class="badge platform-${(s.platform||'inne').toLowerCase()}">${s.platform||'—'}</span></td>
+      <td style="font-weight:700">${fmtZl(pf(s.price))}</td>
+      <td>${fmtZl(pf(s.cost))}</td>
+      <td>${fmtZl(pf(s.comm))}</td>
+      <td>${fmtZl(pf(s.ship))}</td>
+      <td style="color:#34d399;font-weight:600">${fmtZl(pf(s.profit)||pf(s.price))}</td>
+      <td><span class="badge ${statusBadge(s.status)}">${s.status||'—'}</span></td>
+      <td style="color:var(--text3);font-size:12px">${(s.date||'').split(' ')[0]||'—'}</td>
+      <td>
+        ${!s.synced ? '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="openEditSale(\''+s.id+'\')">✏️</button><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="deleteSale(\''+s.id+'\')">🗑️</button>' : '<span style="font-size:11px;color:var(--text3)">sync</span>'}
+      </td>
+    </tr>`).join('');
+}
+
+// ===== HISTORY PRICE SUGGESTION =====
+function getPriceSuggestion(name) {
+  if (!name || name.length < 3) return null;
+  const all = getAllSales();
+  const similar = all.filter(s => s.name && s.name.toLowerCase().includes(name.toLowerCase().slice(0,5)));
+  if (!similar.length) return null;
+  const avg = similar.reduce((s,x)=>s+pf(x.price),0) / similar.length;
+  return Math.round(avg);
+}
+
+// Hook na pole nazwy w modal dodawania sprzedaży
+document.addEventListener('DOMContentLoaded', () => {
+  const nameInput = document.getElementById('s_name');
+  if (nameInput) {
+    nameInput.addEventListener('input', () => {
+      const sug = getPriceSuggestion(nameInput.value);
+      const sugEl = document.getElementById('priceSuggestion');
+      if (sugEl) {
+        if (sug) {
+          sugEl.textContent = '💡 Poprzednio sprzedałeś podobny za ' + fmtZl(sug) + ' — kliknij aby użyć';
+          sugEl.style.display = 'block';
+          sugEl.onclick = () => { const p=document.getElementById('s_price'); if(p) p.value=sug; };
+        } else sugEl.style.display = 'none';
+      }
+    });
+  }
+});
+
+// year page is called in renderAll directly
+
 </script>
+<!-- ===== ONBOARDING WIZARD ===== -->
+<div class="wizard-overlay" id="wizardOverlay">
+  <div class="wizard-card">
+    <div class="wizard-progress">
+      <div class="wizard-dot done" id="wd0"></div>
+      <div class="wizard-dot" id="wd1"></div>
+      <div class="wizard-dot" id="wd2"></div>
+      <div class="wizard-dot" id="wd3"></div>
+    </div>
+    <div class="wizard-step active" id="ws0">
+      <div class="wizard-icon">👋</div>
+      <div class="wizard-title">Witaj w AllInOne!</div>
+      <div class="wizard-desc">Skonfigurujemy aplikację w 3 krokach. Zajmie to mniej niż 2 minuty.<br><br>AllInOne automatycznie pobiera Twoje zamówienia z Vinted przez Gmail i pokazuje wszystko w jednym miejscu.</div>
+      <div class="wizard-actions">
+        <button class="btn btn-ghost" style="flex:1" onclick="skipWizard()">Pomiń</button>
+        <button class="btn btn-primary" style="flex:2" onclick="wizardNext()">Zaczynamy! →</button>
+      </div>
+    </div>
+    <div class="wizard-step" id="ws1">
+      <div class="wizard-icon">📧</div>
+      <div class="wizard-title">Krok 1 — Google Sheets</div>
+      <div class="wizard-desc">Potrzebujesz arkusza Google Sheets z zainstalowanym skryptem AllInOne. To on pobiera zamówienia z Twojego Gmaila.<br><br><strong style="color:var(--purple-light)">Czy masz już skonfigurowany arkusz?</strong></div>
+      <div class="wizard-actions" style="flex-direction:column;gap:8px">
+        <button class="btn btn-primary" onclick="wizardHasSheets()">✅ Tak, mam już arkusz</button>
+        <button class="btn btn-ghost" onclick="wizardNeedSheets()">📥 Nie, pokaż mi jak to zrobić</button>
+      </div>
+    </div>
+    <div class="wizard-step" id="ws2">
+      <div class="wizard-icon">🔗</div>
+      <div class="wizard-title">Krok 2 — Wklej link</div>
+      <div class="wizard-desc">Wklej link do swojego arkusza Google Sheets poniżej. Znajdziesz go w pasku adresu gdy masz otwarty arkusz.</div>
+      <input type="text" id="wizardSheetsUrl" placeholder="https://docs.google.com/spreadsheets/d/..." style="margin-bottom:12px">
+      <div class="wizard-actions">
+        <button class="btn btn-ghost" style="flex:1" onclick="wizardPrev()">← Wstecz</button>
+        <button class="btn btn-primary" style="flex:2" onclick="wizardSaveUrl()">Zapisz i dalej →</button>
+      </div>
+    </div>
+    <div class="wizard-step" id="ws3">
+      <div class="wizard-icon">🎉</div>
+      <div class="wizard-title">Gotowe!</div>
+      <div class="wizard-desc">Konfiguracja zakończona! Kliknij poniżej aby zsynchronizować pierwsze zamówienia z Vinted.</div>
+      <div class="wizard-actions">
+        <button class="btn btn-ghost" style="flex:1" onclick="skipWizard()">Później</button>
+        <button class="btn btn-primary" style="flex:2" onclick="wizardFinish()">🔄 Synchronizuj teraz!</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
