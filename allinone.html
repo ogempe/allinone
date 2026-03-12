@@ -568,25 +568,75 @@ select option { background:var(--bg3); }
 .wizard-desc { font-size:14px; color:var(--text2); line-height:1.7; margin-bottom:20px; }
 .wizard-actions { display:flex; gap:10px; }
 
-/* ===== LIVE SYNC PULSE ===== */
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.3); }
+/* ===== WELCOME MODAL ===== */
+.welcome-overlay {
+  display:none; position:fixed; inset:0; z-index:1500;
+  background:rgba(0,0,0,.75); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center;
 }
-.live-dot {
-  display: inline-block; width: 8px; height: 8px;
-  border-radius: 50%; background: #34d399;
-  animation: pulse 2s infinite; margin-right: 6px;
+.welcome-overlay.active { display:flex; }
+.welcome-modal {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:24px; padding:0; width:100%; max-width:480px;
+  margin:16px; overflow:hidden; box-shadow:var(--shadow);
+  animation:authIn 0.4s ease;
 }
+.welcome-hero {
+  background:var(--grad2); padding:36px 32px 28px;
+  text-align:center; position:relative; overflow:hidden;
+}
+.welcome-hero::before {
+  content:''; position:absolute; inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.welcome-emoji { font-size:56px; margin-bottom:12px; position:relative; }
+.welcome-title {
+  font-family:'Syne',sans-serif; font-size:26px; font-weight:800;
+  color:#fff; margin-bottom:6px; position:relative;
+}
+.welcome-subtitle { font-size:14px; color:rgba(255,255,255,.75); position:relative; }
+.welcome-body { padding:28px 32px; }
+.welcome-steps { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+.welcome-step {
+  display:flex; align-items:center; gap:14px;
+  padding:12px 14px; border-radius:12px;
+  background:var(--bg4); border:1px solid var(--border2);
+}
+.welcome-step-icon {
+  width:36px; height:36px; border-radius:10px;
+  background:var(--grad); display:flex; align-items:center;
+  justify-content:center; font-size:18px; flex-shrink:0;
+}
+.welcome-step-text { font-size:13px; color:var(--text2); line-height:1.4; }
+.welcome-step-text strong { color:var(--text); }
 
-/* ===== DASHBOARD SYNC BANNER ===== */
-.sync-live-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25);
-  color: #34d399; border-radius: 99px; padding: 3px 10px;
-  font-size: 11px; font-weight: 700;
+/* ===== DEMO LOCK ===== */
+.demo-locked {
+  position:relative; pointer-events:none;
 }
+.demo-locked::after {
+  content:''; position:absolute; inset:0; z-index:10;
+  background:rgba(10,10,15,0.55);
+  backdrop-filter:blur(3px) grayscale(0.8);
+  border-radius:inherit;
+  border:1px solid rgba(255,255,255,0.06);
+}
+.demo-lock-badge {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  z-index:11; background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:10px 18px; font-size:13px; font-weight:700;
+  color:var(--text2); white-space:nowrap; box-shadow:var(--shadow2);
+  display:flex; align-items:center; gap:8px; pointer-events:all; cursor:pointer;
+}
+.nav-item.demo-nav-locked {
+  opacity:0.45; position:relative;
+}
+.nav-item.demo-nav-locked::after {
+  content:'🔒'; position:absolute; right:10px; font-size:12px;
+}
+.nav-item.demo-nav-locked:hover { background:transparent !important; cursor:default; }
 
+/* ===== GHOST PLACEHOLDERS ===== */
 .ghost-chart { background:linear-gradient(90deg,var(--bg4) 25%,var(--bg3) 50%,var(--bg4) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
@@ -779,7 +829,7 @@ select option { background:var(--bg3); }
   <div class="topbar-actions">
     <div class="search-wrap">
       <span class="search-icon">🔎</span>
-      <input type="text" placeholder="Szukaj..." data-i18n-placeholder="search_placeholder" oninput="debounce(handleSearch, 300)(this.value)">
+      <input type="text" placeholder="Szukaj..." data-i18n-placeholder="search_placeholder">
     </div>
     <div class="dropdown">
       <div class="lang-btn" onclick="toggleDropdown('langMenu')">🌐 <span id="langLabel">PL</span> ▾</div>
@@ -804,10 +854,7 @@ select option { background:var(--bg3); }
 
 <!-- ===== DASHBOARD ===== -->
 <section class="page active" id="page-dashboard">
-  <div class="breadcrumb" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-    <span data-i18n="nav_dashboard">Dashboard</span>
-    <span class="sync-live-badge" id="dashSyncBadge" style="display:none">🟢 Live</span>
-  </div>
+  <div class="breadcrumb"><span data-i18n="nav_dashboard">Dashboard</span></div>
 
   <!-- LIMIT BANNER -->
   <div id="limitBanner" style="display:none;background:linear-gradient(90deg,rgba(245,158,11,.15),rgba(239,68,68,.1));border:1px solid rgba(245,158,11,.4);border-radius:12px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
@@ -910,10 +957,7 @@ select option { background:var(--bg3); }
   <div class="card">
     <div class="card-header">
       <div class="card-title">📋 Ostatnie sprzedaże</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span id="dashVintedCount" style="font-size:11px;color:var(--text3)"></span>
-        <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="showPage('sales',document.querySelector('.nav-item'))">Zobacz wszystkie →</button>
-      </div>
+      <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="showPage('sales',document.querySelector('.nav-item'))">Zobacz wszystkie →</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -1551,7 +1595,10 @@ select option { background:var(--bg3); }
 
 <!-- ===== PODSUMOWANIE ROKU ===== -->
 <section class="page" id="page-year">
-  <div class="breadcrumb">📅 Podsumowanie roku</div>
+  <div class="breadcrumb" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span>📅 Podsumowanie roku</span>
+    <span id="yearPageTitle" style="display:flex;gap:4px;align-items:center"></span>
+  </div>
   <div class="stats-grid" style="margin-bottom:20px">
     <div class="stat-card purple"><div class="stat-icon">💰</div><div class="stat-label">Przychód roczny</div><div class="stat-value" id="yr_income">— zł</div></div>
     <div class="stat-card bordeaux"><div class="stat-icon">💳</div><div class="stat-label">Koszty roczne</div><div class="stat-value" id="yr_costs">— zł</div></div>
@@ -1805,48 +1852,123 @@ function doRegister() {
 
   accounts.push({ first, last, email, password: pass });
   localStorage.setItem('allinone_accounts', JSON.stringify(accounts));
-  loginSuccess({ first, last, email });
+  loginSuccess({ first, last, email, _isNew: true });
 }
 
 function loginSuccess(user) {
   appState.user = user;
   saveState();
 
-  // Update UI
   const name = user.first + ' ' + user.last;
   document.getElementById('sidebarName').textContent = name;
   document.getElementById('topbarAvatar').textContent = (user.first[0] + user.last[0]).toUpperCase();
 
-  // Fill settings
   document.getElementById('settFirstName').value = user.first || '';
   document.getElementById('settLastName').value  = user.last  || '';
   document.getElementById('settEmail').value     = user.email || '';
 
-  // Hide auth, show app
   document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
   document.getElementById('app').classList.add('active');
 
-  // Restore theme
   setTheme(appState.theme || 'dark');
   setLang(appState.lang || 'pl');
 
-  // Render existing data
   renderAll();
   updatePlanUI();
-  // Start auto-refresh from Sheets
-  startAutoRefresh();
-  // Update sync timestamp in dashboard
-  _updateLastSyncUI();
-  // Show wizard for new users
-  if (!appState.wizardDone && !appState.syncedData?.length) {
-    setTimeout(() => showWizard(), 600);
+
+  const isDemo = user.email === 'demo@allinone.pl';
+
+  if (isDemo) {
+    // Demo — zablokuj wybrane sekcje
+    applyDemoLocks(true);
+    // Pokaż demo data od razu
+    setTimeout(() => {
+      const sd = document.getElementById('sheetsUrlInput');
+      if (sd) sd.value = appState.sheetsUrl || '';
+    }, 100);
+  } else if (user._isNew) {
+    // Nowy użytkownik — pokaż welcome modal
+    delete user.appState;
+    setTimeout(() => showWelcome(user.first), 400);
+  } else {
+    // Powracający użytkownik — wizard jeśli nie skonfigurował
+    if (!appState.wizardDone && !appState.syncedData?.length) {
+      setTimeout(() => showWizard(), 600);
+    }
   }
-  // Request push notifications
+
   setTimeout(() => requestNotifications(), 2000);
 }
 
+// ===== WELCOME MODAL =====
+function showWelcome(firstName) {
+  const el = document.getElementById('welcomeUserName');
+  if (el) el.textContent = `Cześć ${firstName}! Cieszmy się że jesteś 👋`;
+  document.getElementById('welcomeOverlay').classList.add('active');
+}
+
+function closeWelcome() {
+  document.getElementById('welcomeOverlay').classList.remove('active');
+  // Po zamknięciu welcome — pokaż wizard konfiguracji
+  if (!appState.wizardDone) {
+    setTimeout(() => showWizard(), 300);
+  }
+}
+
+// ===== DEMO LOCKS =====
+// Strony zablokowane w trybie demo (wymaga rejestracji)
+const DEMO_LOCKED_PAGES = ['tax', 'costs', 'reports', 'year', 'plans'];
+
+function applyDemoLocks(isDemo) {
+  // Nav items
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const onclick = item.getAttribute('onclick') || '';
+    const page = (onclick.match(/showPage\('(\w+)'/) || [])[1];
+    if (page && DEMO_LOCKED_PAGES.includes(page)) {
+      if (isDemo) {
+        item.classList.add('demo-nav-locked');
+        item.setAttribute('onclick', `showDemoLockToast('${page}')`);
+        item.setAttribute('data-original-onclick', `showPage('${page}',this)`);
+      } else {
+        item.classList.remove('demo-nav-locked');
+        const orig = item.getAttribute('data-original-onclick');
+        if (orig) item.setAttribute('onclick', orig);
+      }
+    }
+  });
+  // Page overlays
+  DEMO_LOCKED_PAGES.forEach(pageId => {
+    const page = document.getElementById('page-' + pageId);
+    if (!page) return;
+    let lockEl = page.querySelector('.demo-page-lock');
+    if (isDemo) {
+      if (!lockEl) {
+        lockEl = document.createElement('div');
+        lockEl.className = 'demo-page-lock';
+        lockEl.style.cssText = 'position:absolute;inset:0;z-index:50;background:rgba(10,10,15,0.7);backdrop-filter:blur(4px) grayscale(1);border-radius:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px';
+        lockEl.innerHTML = `
+          <div style="font-size:48px">🔒</div>
+          <div style="font-family:\'Syne\',sans-serif;font-size:20px;font-weight:800;color:#fff;text-align:center">Ta sekcja wymaga konta</div>
+          <div style="font-size:14px;color:rgba(255,255,255,.6);text-align:center;max-width:300px">Zarejestruj się za darmo aby odblokować wszystkie funkcje AllInOne.</div>
+          <button class="btn-auth" style="max-width:260px;margin-top:4px" onclick="document.querySelectorAll('.auth-screen').forEach(s=>s.classList.remove('active'));showScreen('screenRegister');document.getElementById('app').classList.remove('active')">✨ Zarejestruj się za darmo</button>
+          <div style="font-size:12px;color:rgba(255,255,255,.4)">Już masz konto? <a onclick="document.getElementById(\'app\').classList.remove(\'active\');showScreen(\'screenLogin\')" style="color:var(--purple-light);cursor:pointer">Zaloguj się</a></div>`;
+        page.style.position = 'relative';
+        page.appendChild(lockEl);
+      }
+      lockEl.style.display = 'flex';
+    } else {
+      if (lockEl) lockEl.style.display = 'none';
+    }
+  });
+}
+
+function showDemoLockToast(page) {
+  showToast('🔒 Ta sekcja wymaga rejestracji — to tylko demo');
+  // Highlight register button briefly
+  const regBtn = document.getElementById('registerBtn');
+}
+
 function doLogout() {
-  stopAutoRefresh();
   appState.user = null;
   saveState();
   document.getElementById('app').classList.remove('active');
@@ -1932,8 +2054,7 @@ function addSale() {
   const profit= price - cost - ship - comm;
   const sale  = { id: Date.now(), name, platform, price, cost, ship, comm, profit, status, date: new Date().toLocaleDateString('pl-PL') };
   appState.sales.unshift(sale);
-  saveState(); markDirty('sales'); closeModal();
-  showToast('✅ Sprzedaż dodana: ' + name);
+  saveState(); renderAll(); closeModal();
   // Clear
   ['s_name','s_price','s_cost','s_ship'].forEach(id => document.getElementById(id).value = '');
 }
@@ -1949,7 +2070,7 @@ function addProduct() {
   if (!name) { alert('Podaj nazwę produktu'); return; }
   const product = { id: Date.now(), name, buy, sell, cat, state, tags, margin: sell - buy };
   appState.products.unshift(product);
-  saveState(); markDirty('products'); closeModal();
+  saveState(); renderAll(); closeModal();
   ['p_name','p_buy','p_sell','p_tags'].forEach(id => document.getElementById(id).value = '');
 }
 
@@ -1962,7 +2083,7 @@ function addCost() {
   if (!name) { alert('Podaj nazwę kosztu'); return; }
   const cost = { id: Date.now(), name, amount, cat, date: date ? new Date(date).toLocaleDateString('pl-PL') : new Date().toLocaleDateString('pl-PL') };
   appState.costs.unshift(cost);
-  saveState(); markDirty('costs'); closeModal();
+  saveState(); renderAll(); closeModal();
   document.getElementById('cost_name').value = '';
   document.getElementById('cost_amount').value = '';
 }
@@ -1985,54 +2106,7 @@ function getAllSales() {
   return [...manual, ...synced];
 }
 
-// ===== SELECTIVE RENDER SYSTEM =====
-// Only re-render what's actually visible + what changed
-let _renderScheduled = false;
-let _dirtyPages = new Set();
-
-function markDirty(...pages) {
-  pages.forEach(p => _dirtyPages.add(p));
-  if (!_renderScheduled) {
-    _renderScheduled = true;
-    requestAnimationFrame(() => {
-      _renderScheduled = false;
-      _flushRender();
-    });
-  }
-}
-
-function _flushRender() {
-  const active = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
-  // Always update active page + dashboard stats
-  if (_dirtyPages.has('sales') || _dirtyPages.has('all')) {
-    renderSales();
-    updateDashboard();
-    updateReports();
-    updateStats();
-    updateYearPage();
-    updateTaxPage();
-  }
-  if (_dirtyPages.has('products') || _dirtyPages.has('all')) {
-    renderProducts();
-    renderInventory();
-  }
-  if (_dirtyPages.has('costs') || _dirtyPages.has('all')) {
-    renderCosts();
-    updateTaxPage();
-    updateReports();
-    updateDashboard();
-  }
-  if (_dirtyPages.has('sync') || _dirtyPages.has('all')) {
-    updateDashboard();
-    renderSales();
-    updateReports();
-    updateStats();
-    updateYearPage();
-    updateTaxPage();
-  }
-  _dirtyPages.clear();
-}
-
+// ===== RENDER ALL =====
 function renderAll() {
   renderSales();
   renderProducts();
@@ -2162,43 +2236,75 @@ function renderDashChart() {
   const all  = getAllSales();
   const now  = new Date();
   let days   = dashChartRange === 'day' ? 1 : dashChartRange === 'month' ? 30 : 7;
-  // Build buckets
-  const buckets = [];
-  for (let i = days-1; i >= 0; i--) {
-    const d = new Date(now); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
-    const label = days===1
-      ? d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})
-      : days===7
-        ? ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][d.getDay()]
-        : d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');
-    const rev = all.filter(s => {
-      const sd = parseDate(s.date);
-      return sd && sameDay(sd, d);
-    }).reduce((s,x) => s+pf(x.price), 0);
-    buckets.push({label, rev: Math.round(rev)});
+
+  // Build buckets (ostatnie N dni od dziś)
+  const buildBuckets = (n) => {
+    const buckets = [];
+    for (let i = n-1; i >= 0; i--) {
+      const d = new Date(now); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
+      const label = n===1
+        ? d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})
+        : n<=7
+          ? ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][d.getDay()]
+          : d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');
+      const rev = all.filter(s => { const sd=parseDate(s.date); return sd && sameDay(sd,d); }).reduce((s,x)=>s+pf(x.price),0);
+      buckets.push({label, rev: Math.round(rev), d});
+    }
+    return buckets;
+  };
+
+  let buckets = buildBuckets(days);
+  let maxRev = Math.max(...buckets.map(b=>b.rev), 0);
+
+  // FIX: jeśli bieżący okres jest pusty, pokaż ostatnie N miesięcy gdzie są dane
+  if (maxRev === 0 && all.length > 0) {
+    // Znajdź najstarszą i najnowszą datę sprzedaży
+    const dates = all.map(s=>parseDate(s.date)).filter(Boolean).sort((a,b)=>a-b);
+    const newest = dates[dates.length-1];
+    const oldest = dates[0];
+    // Pokaż wykres po miesiącach za ostatnie 12 mies od najnowszej daty
+    const monthBuckets = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(newest.getFullYear(), newest.getMonth()-i, 1);
+      const label = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'][d.getMonth()] + ' ' + String(d.getFullYear()).slice(2);
+      const rev = all.filter(s=>{ const sd=parseDate(s.date); return sd && sd.getFullYear()===d.getFullYear() && sd.getMonth()===d.getMonth(); }).reduce((s,x)=>s+pf(x.price),0);
+      monthBuckets.push({label, rev:Math.round(rev)});
+    }
+    const mMax = Math.max(...monthBuckets.map(b=>b.rev), 1);
+    // Pokaż info że to dane historyczne
+    const newestLabel = newest.toLocaleDateString('pl-PL', {month:'long', year:'numeric'});
+    wrap.innerHTML = `<div style="font-size:11px;color:var(--text3);margin-bottom:8px;padding:0 4px">
+      📅 Dane historyczne — ostatnia sprzedaż: <strong style="color:var(--purple-light)">${newest.toLocaleDateString('pl-PL')}</strong>
+    </div>` +
+    '<div style="display:flex;align-items:flex-end;gap:4px;height:140px;padding:0 4px">' +
+      monthBuckets.map(b => {
+        const pct = Math.round(b.rev/mMax*100);
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px" title="${b.label}: ${b.rev} zł">
+          ${b.rev>0?`<div style="font-size:8px;color:var(--text3)">${b.rev}</div>`:''}
+          <div style="width:100%;border-radius:3px 3px 0 0;background:${b.rev>0?'var(--grad)':'var(--bg4)'};height:${Math.max(pct,2)}%;transition:height .4s ease"></div>
+          <div style="font-size:9px;color:var(--text3);white-space:nowrap">${b.label}</div>
+        </div>`;
+      }).join('') +
+    '</div>';
+    return;
   }
-  const maxRev = Math.max(...buckets.map(b=>b.rev), 1);
+
   if (maxRev === 0) {
     wrap.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--text3);font-size:13px">Brak sprzedaży w tym okresie.<br><button class="btn btn-primary" style="margin-top:10px;font-size:12px" onclick="showPage(\'sync\',document.querySelector(\'.nav-item\'))">⚡ Synchronizuj Vinted</button></div>';
     return;
   }
+
   wrap.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:150px;padding:0 4px">' +
     buckets.map(b => {
       const pct = Math.round(b.rev / maxRev * 100);
-      const isToday = b.label === ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][now.getDay()];
+      const isToday = b.d && sameDay(b.d, now);
       return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;cursor:default" title="${b.rev} zł">
         ${b.rev > 0 ? `<div style="font-size:9px;color:var(--text3)">${b.rev} zł</div>` : ''}
-        <div style="width:100%;border-radius:4px 4px 0 0;background:${isToday ? 'var(--grad)' : 'var(--purple)'};opacity:${b.rev>0?1:0.2};transition:height .4s ease;height:${Math.max(pct,2)}%" data-pct="${pct}"></div>
+        <div style="width:100%;border-radius:4px 4px 0 0;background:${isToday ? 'var(--grad)' : 'var(--purple)'};opacity:${b.rev>0?1:0.2};height:${Math.max(pct,2)}%;transition:height .4s ease"></div>
         <div style="font-size:10px;color:${isToday?'var(--purple-light)':'var(--text3)'};white-space:nowrap">${b.label}</div>
       </div>`;
     }).join('') +
   '</div>';
-  // animate bars
-  requestAnimationFrame(() => {
-    wrap.querySelectorAll('[data-pct]').forEach(el => {
-      el.style.height = el.dataset.pct + '%';
-    });
-  });
 }
 
 function renderSources(all) {
@@ -2229,7 +2335,13 @@ function renderTopProducts(all) {
   const el = document.getElementById('topProductsList');
   if (!el) return;
   const now = new Date();
-  const month = all.filter(s => { const d=parseDate(s.date); return d && sameMonth(d,now); });
+  // FIX: fallback do last 30 dni jeśli bieżący miesiąc pustu
+  const calMonth = all.filter(s => { const d=parseDate(s.date); return d && sameMonth(d,now); });
+  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
+  const last30  = all.filter(s => { const d=parseDate(s.date); return d && d>=last30d; });
+  const month   = calMonth.length > 0 ? calMonth : last30;
+  const periodBadge = document.getElementById('topProdPeriod');
+  if (periodBadge) periodBadge.textContent = calMonth.length > 0 ? 'ten miesiąc' : 'ostatnie 30 dni';
   const map = {};
   month.forEach(s => {
     const k = s.name;
@@ -2259,9 +2371,17 @@ function renderForecast(all) {
   const month = now.getMonth();
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const dayOfMonth  = now.getDate();
-  const monthSales  = all.filter(s => { const d=parseDate(s.date); return d && sameMonth(d,now); });
-  const monthRev    = monthSales.reduce((s,x)=>s+pf(x.price),0);
-  const forecast    = dayOfMonth > 0 ? Math.round(monthRev / dayOfMonth * daysInMonth) : 0;
+  // FIX: fallback do last 30 dni
+  const calMonthSales = all.filter(s => { const d=parseDate(s.date); return d && sameMonth(d,now); });
+  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
+  const last30  = all.filter(s => { const d=parseDate(s.date); return d && d>=last30d; });
+  const monthSales = calMonthSales.length > 0 ? calMonthSales : last30;
+  const monthRev   = monthSales.reduce((s,x)=>s+pf(x.price),0);
+  // Jeśli dane historyczne — prognoza na podstawie średniej dziennej z ostatnich 30 dni
+  const dailyAvg   = calMonthSales.length > 0
+    ? monthRev / dayOfMonth
+    : monthRev / 30;
+  const forecast   = Math.round(dailyAvg * daysInMonth);
   const el = document.getElementById('d_forecast');
   const sub = document.getElementById('d_forecast_sub');
   const bar = document.getElementById('forecastBar');
@@ -2269,7 +2389,7 @@ function renderForecast(all) {
   const barPct = document.getElementById('forecastBarPct');
   if (el) el.textContent = monthRev > 0 ? fmtZl(forecast) : '— zł';
   if (sub) sub.textContent = monthRev > 0
-    ? `bazując na ${dayOfMonth} dniach · ${fmtZl(monthRev)} do teraz`
+    ? `bazując na ${calMonthSales.length>0?dayOfMonth+'dniach':'śr. z 30 dni'} · ${fmtZl(monthRev)} do teraz`
     : 'Dodaj sprzedaże aby zobaczyć prognozę';
   if (bar) bar.style.display = monthRev > 0 ? 'block' : 'none';
   if (barFill) barFill.style.width = Math.min(100, Math.round(dayOfMonth/daysInMonth*100)) + '%';
@@ -2318,19 +2438,9 @@ function renderRecentSales(all) {
     const da = parseDate(a.date)||new Date(0);
     const db = parseDate(b.date)||new Date(0);
     return db-da;
-  }).slice(0,10);
-  // Update Vinted count badge
-  const vintedCount = (appState.syncedData||[]).length;
-  const countEl = document.getElementById('dashVintedCount');
-  if (countEl) {
-    if (vintedCount > 0) {
-      countEl.innerHTML = `<span class="sync-live-badge">🟢 ${vintedCount} z Vinted</span>`;
-    } else {
-      countEl.innerHTML = `<span style="color:var(--text3);font-size:11px">⚪ Brak danych Vinted — <a onclick="showPage('sync',document.querySelector('.nav-item'))" style="color:var(--purple-light);cursor:pointer">synchronizuj →</a></span>`;
-    }
-  }
+  }).slice(0,8);
   if (!recent.length) {
-    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Brak sprzedaży — <span onclick="showPage(\'sync\',document.querySelector(\'.nav-item\'))" style="color:var(--purple-light);cursor:pointer">synchronizuj Vinted →</span></td></tr>';
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Brak sprzedaży — synchronizuj Vinted lub dodaj ręcznie</td></tr>';
     return;
   }
   tb.innerHTML = recent.map(s=>`<tr>
@@ -2373,8 +2483,11 @@ function renderLimitBanner(all) {
   if (!banner) return;
   const now = new Date();
   const limit = appState.taxLimit || 3499;
-  // FIX: limit miesięczny = tylko bieżący miesiąc, nie totalny
-  const monthRev = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
+  // FIX: fallback do last 30 dni jeśli bieżący miesiąc ma 0 danych
+  const calMonthRev = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
+  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
+  const last30Rev = all.filter(s=>{ const d=parseDate(s.date); return d && d>=last30d; }).reduce((s,x)=>s+pf(x.price),0);
+  const monthRev = calMonthRev > 0 ? calMonthRev : last30Rev;
   const pct = Math.min(Math.round(monthRev/limit*100),100);
   // Always show
   banner.style.display = 'flex';
@@ -2405,24 +2518,35 @@ function renderLimitBanner(all) {
 function updateDashboard() {
   const all      = getAllSales();
   const now      = new Date();
-  const today    = now.toLocaleDateString('pl-PL');
   const costTotal= (appState.costs||[]).reduce((s,c)=>s+pf(c.amount),0);
-  const todaySales  = all.filter(s=>(s.date||'').split(' ')[0]===today);
-  const monthSales  = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); });
+
+  // FIX: używaj parseDate do porównania "dziś" (nie string-compare który nie działa z syncedData)
+  const todaySales = all.filter(s=>{ const d=parseDate(s.date); return d && sameDay(d,now); });
+
+  // FIX: "w miesiącu" = ostatnie 30 dni jeśli bieżący miesiąc ma 0 danych, fallback do ostatnich 30 dni
+  const calMonthSales = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); });
+  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
+  const last30Sales   = all.filter(s=>{ const d=parseDate(s.date); return d && d>=last30d; });
+
+  // Użyj danych z bieżącego miesiąca jeśli są, w przeciwnym razie last 30 dni
+  const monthSales  = calMonthSales.length > 0 ? calMonthSales : last30Sales;
+  const periodLabel = calMonthSales.length > 0 ? 'w tym mies.' : 'ostatnie 30 dni';
+
   const todayRev    = todaySales.reduce((s,x)=>s+pf(x.price),0);
   const monthRev    = monthSales.reduce((s,x)=>s+pf(x.price),0);
-  const monthCosts  = costTotal;
-  const monthProfit = monthRev - monthCosts;
-  const avgPrice    = all.length ? monthRev/Math.max(monthSales.length,1) : 0;
+  const monthProfit = monthRev - costTotal;
+  const avgPrice    = monthSales.length ? monthRev/monthSales.length : 0;
 
   document.getElementById('d_today').textContent    = fmtZl(todayRev);
-  document.getElementById('d_today_sub').textContent= todaySales.length + ' sprzedaż' + (todaySales.length===1?'':'y');
+  document.getElementById('d_today_sub').textContent= todaySales.length
+    ? todaySales.length + ' sprzedaż' + (todaySales.length===1?'':'y')
+    : 'brak dziś';
   document.getElementById('d_month').textContent    = fmtZl(monthRev);
-  document.getElementById('d_month_sub').textContent= monthSales.length + ' sprzedaż' + (monthSales.length===1?'':'y') + ' w tym mies.';
+  document.getElementById('d_month_sub').textContent= monthSales.length + ' sprzedaż' + (monthSales.length===1?'':'y') + ' — ' + periodLabel;
   document.getElementById('d_profit').textContent   = fmtZl(monthProfit);
   document.getElementById('d_profit_sub').textContent= costTotal > 0 ? 'po odliczeniu ' + fmtZl(costTotal) + ' kosztów' : 'brak kosztów w tym mies.';
   document.getElementById('d_orders').textContent   = all.length;
-  document.getElementById('d_orders_sub').textContent= 'śr. ' + (all.length ? fmtZl(Math.round(monthRev/Math.max(monthSales.length,1))) : '—') + '/szt';
+  document.getElementById('d_orders_sub').textContent= 'śr. ' + (monthSales.length ? fmtZl(Math.round(avgPrice)) : '—') + '/szt';
 
   const s_avg = document.getElementById('s_avg');
   if (s_avg) s_avg.textContent = fmtZl(avgPrice);
@@ -2446,7 +2570,11 @@ function updateTaxPage() {
   const all    = getAllSales();
   const now    = new Date();
   const income = all.reduce((s,x)=>s+pf(x.price),0);
-  const monthInc = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
+  // FIX: fallback do last 30 dni jeśli bieżący miesiąc ma 0 danych
+  const calMonthInc = all.filter(s=>{ const d=parseDate(s.date); return d && sameMonth(d,now); }).reduce((s,x)=>s+pf(x.price),0);
+  const last30d = new Date(now); last30d.setDate(last30d.getDate()-30);
+  const last30Inc = all.filter(s=>{ const d=parseDate(s.date); return d && d>=last30d; }).reduce((s,x)=>s+pf(x.price),0);
+  const monthInc = calMonthInc > 0 ? calMonthInc : last30Inc;
   const costs  = (appState.costs||[]).reduce((s,c)=>s+pf(c.amount),0);
   const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
   setEl('tax_month', fmtZl(monthInc));
@@ -2635,7 +2763,6 @@ async function syncFromSheets() {
 
     if (!appState.syncedData.length) throw new Error('Nie znaleziono danych — sprawdź czy zakładka "Vinted" zawiera wiersze z danymi.');
 
-    appState.lastSyncTime = new Date().toISOString();
     saveState();
     renderSyncTable(appState.syncedData);
     updateSyncStats(appState.syncedData);
@@ -2644,39 +2771,12 @@ async function syncFromSheets() {
     document.getElementById('st3').className = 'badge badge-green';
     showSyncStatus(`✅ Zsynchronizowano ${appState.syncedData.length} zamówień z Vinted!`, 'success');
     sendNotification('AllInOne — Synchronizacja gotowa 🛍️', `Pobrano ${appState.syncedData.length} zamówień z Vinted!`);
-
-    // === KLUCZOWE: natychmiast odśwież cały dashboard ===
-    markDirty('sync');
-    // Jeśli użytkownik jest na dashboardzie — pokaż toast z podsumowaniem
-    const activePage = document.querySelector('.page.active')?.id;
-    if (activePage === 'page-dashboard') {
-      const rev = appState.syncedData.reduce((s,r)=>s+(parseFloat(r.price)||0),0);
-      showToast(`🔄 Dashboard odświeżony — ${appState.syncedData.length} zamówień, ${Math.round(rev)} zł`);
-    }
-    // Aktualizuj badge sync w navbarze
-    _updateSyncBadge();
   } catch(e) {
     showSyncStatus('❌ ' + e.message, 'error');
     console.error('Błąd sync:', e);
   }
   document.getElementById('syncBtn').textContent = '🔄 Synchronizuj';
   document.getElementById('syncBtn').disabled = false;
-}
-
-function _updateSyncBadge() {
-  // Aktualizuj wskaźnik "live" w sidebarze przy Sync Vinted
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(item => {
-    if (item.textContent.includes('Sync Vinted')) {
-      const dot = item.querySelector('.live-sync-dot');
-      if (!dot) {
-        const d = document.createElement('span');
-        d.className = 'live-sync-dot';
-        d.style.cssText = 'width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;margin-left:auto;animation:pulse 2s infinite';
-        item.appendChild(d);
-      }
-    }
-  });
 }
 
 function renderSyncTable(data) {
@@ -2704,10 +2804,6 @@ function loadDemoData() {
   saveState();
   renderSyncTable(appState.syncedData);
   updateSyncStats(appState.syncedData);
-  document.getElementById('lastSync').textContent = new Date().toLocaleString('pl-PL');
-  // Odśwież dashboard z danymi demo
-  markDirty('sync');
-  showToast('🎭 Dane demo załadowane — dashboard odświeżony!');
   document.getElementById('lastSync').textContent = 'Demo — ' + new Date().toLocaleString('pl-PL');
   showSyncStatus('✅ Dane demo załadowane! Tak będzie wyglądać po prawdziwej synchronizacji.', 'success');
 }
@@ -2738,7 +2834,7 @@ function saveProfile() {
   document.getElementById('sidebarName').textContent = name;
   document.getElementById('topbarAvatar').textContent = (appState.user.first[0]+appState.user.last[0]).toUpperCase();
   saveState();
-  showToast('✅ Profil zapisany!');
+  alert('✅ Profil zapisany!');
 }
 
 function updateTaxLimit() {
@@ -2750,15 +2846,13 @@ function updateTaxLimit() {
 function saveTaxSettings() {
   appState.taxLimit = parseInt(document.getElementById('taxLimit').value) || 3499;
   saveState();
-  showToast('✅ Ustawienia podatkowe zapisane!');
+  alert('✅ Ustawienia podatkowe zapisane!');
 }
 
 function clearAllData() {
-  showConfirm('Usunąć WSZYSTKIE dane? Tej operacji nie można cofnąć!', () => {
-    appState.sales = []; appState.products = []; appState.costs = []; appState.syncedData = [];
-    saveState(); renderAll();
-    showToast('Wszystkie dane zostały usunięte.');
-  });
+  appState.sales = []; appState.products = []; appState.costs = []; appState.syncedData = [];
+  saveState(); renderAll();
+  alert('Wszystkie dane zostały usunięte.');
 }
 
 // ===== INIT =====
@@ -2841,51 +2935,26 @@ function updatePlanUI() {
   }
 }
 
-// ===== CUSTOM CONFIRM MODAL =====
-function showConfirm(msg, onYes) {
-  let overlay = document.getElementById('confirmOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'confirmOverlay';
-    overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;backdrop-filter:blur(4px);align-items:center;justify-content:center';
-    overlay.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:360px;width:calc(100%-32px);box-shadow:var(--shadow)">
-      <div id="confirmMsg" style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:20px;line-height:1.5"></div>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" style="flex:1" id="confirmNo">Anuluj</button>
-        <button class="btn btn-primary" style="flex:1;background:linear-gradient(135deg,#dc2626,#9b1c1c)" id="confirmYes">Usuń</button>
-      </div>
-    </div>`;
-    document.body.appendChild(overlay);
-    document.getElementById('confirmNo').onclick = () => { overlay.style.display = 'none'; };
-  }
-  document.getElementById('confirmMsg').textContent = msg;
-  overlay.style.display = 'flex';
-  document.getElementById('confirmYes').onclick = () => { overlay.style.display = 'none'; onYes(); };
-}
-
 // ===== DELETE FUNCTIONS =====
 function deleteSale(id) {
-  showConfirm('Usunąć tę sprzedaż?', () => {
-    appState.sales = appState.sales.filter(s => s.id !== id);
-    saveState(); markDirty('sales');
-    showToast('Sprzedaż usunięta');
-  });
+  if (!confirm('Usunąć tę sprzedaż?')) return;
+  appState.sales = appState.sales.filter(s => s.id !== id);
+  saveState(); renderAll();
+  showToast('Sprzedaż usunięta');
 }
 
 function deleteProduct(id) {
-  showConfirm('Usunąć ten produkt z magazynu?', () => {
-    appState.products = appState.products.filter(p => p.id !== id);
-    saveState(); markDirty('products');
-    showToast('Produkt usunięty');
-  });
+  if (!confirm('Usunąć ten produkt z magazynu?')) return;
+  appState.products = appState.products.filter(p => p.id !== id);
+  saveState(); renderAll();
+  showToast('Produkt usunięty');
 }
 
 function deleteCost(id) {
-  showConfirm('Usunąć ten koszt?', () => {
-    appState.costs = appState.costs.filter(c => c.id !== id);
-    saveState(); markDirty('costs');
-    showToast('Koszt usunięty');
-  });
+  if (!confirm('Usunąć ten koszt?')) return;
+  appState.costs = appState.costs.filter(c => c.id !== id);
+  saveState(); renderAll();
+  showToast('Koszt usunięty');
 }
 
 // ===== EDIT FUNCTIONS =====
@@ -2919,7 +2988,7 @@ function saveSaleEdit() {
     profit: price - cost - ship - comm,
     status: document.getElementById('es_status').value,
   };
-  saveState(); markDirty('sales'); closeModal();
+  saveState(); renderAll(); closeModal();
   showToast('Sprzedaż zaktualizowana ✅');
 }
 
@@ -2951,7 +3020,7 @@ function saveProductEdit() {
     state:  document.getElementById('ep_state').value,
     tags:   document.getElementById('ep_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
   };
-  saveState(); markDirty('products'); closeModal();
+  saveState(); renderAll(); closeModal();
   showToast('Produkt zaktualizowany ✅');
 }
 
@@ -2980,7 +3049,7 @@ function saveCostEdit() {
     cat:    document.getElementById('ec_cat').value,
     date:   dateVal ? new Date(dateVal).toLocaleDateString('pl-PL') : appState.costs[idx].date,
   };
-  saveState(); markDirty('costs'); closeModal();
+  saveState(); renderAll(); closeModal();
   showToast('Koszt zaktualizowany ✅');
 }
 
@@ -3293,6 +3362,19 @@ document.querySelectorAll('.nav-item').forEach(el => {
 // ===== QUICK DEMO LOGIN =====
 function quickDemo() {
   appState.plan = 'ultra';
+  // Załaduj przykładowe dane demo
+  appState.syncedData = [
+    { product:'Stone Island kurtka L',   price:'485', status:'Sprzedane',   date:'21.12.2025', buyer:'demo_user1', platform:'Vinted' },
+    { product:'Szalik wełniany COS',     price:'55',  status:'Dostarczone', date:'12.12.2025', buyer:'demo_user2', platform:'Vinted' },
+    { product:'Eastpak plecak',          price:'85',  status:'Sprzedane',   date:'11.12.2025', buyer:'demo_user3', platform:'Vinted' },
+    { product:'Fjällräven plecak Kånken',price:'175', status:'Sprzedane',   date:'07.12.2025', buyer:'demo_user4', platform:'Vinted' },
+    { product:'Koszulka vintage AC/DC M',price:'55',  status:'Sprzedane',   date:'07.12.2025', buyer:'demo_user5', platform:'Vinted' },
+    { product:'Mango bluzka S',          price:'35',  status:'Sprzedane',   date:'07.12.2025', buyer:'demo_user6', platform:'Vinted' },
+    { product:'The North Face kurtka M', price:'295', status:'Sprzedane',   date:'04.12.2025', buyer:'demo_user7', platform:'Vinted' },
+    { product:'Fjällräven plecak Kånken',price:'210', status:'Dostarczone', date:'03.12.2025', buyer:'demo_user8', platform:'Vinted' },
+    { product:'Adidas Hoodie M',         price:'85',  status:'Sprzedane',   date:'27.11.2025', buyer:'demo_user9', platform:'Vinted' },
+    { product:'The North Face kurtka M', price:'305', status:'Dostarczone', date:'21.11.2025', buyer:'demo_user10',platform:'Vinted' },
+  ];
   loginSuccess({ first:'Demo', last:'User', email:'demo@allinone.pl' });
 }
 
@@ -3438,7 +3520,7 @@ function quickAddSale() {
     buyer: '—'
   };
   appState.sales.unshift(sale);
-  saveState(); markDirty('sales');
+  saveState(); renderAll();
   document.getElementById('qa_name').value = '';
   document.getElementById('qa_price').value = '';
   showToast('✅ Dodano: ' + name + ' — ' + fmtZl(price));
@@ -3449,22 +3531,70 @@ function updateYearPage() {
   const all   = getAllSales();
   const costs = appState.costs || [];
   const now   = new Date();
-  const year  = now.getFullYear();
+
+  // FIX: znajdź rok z największą ilością danych (nie zawsze bieżący rok)
+  const yearCounts = {};
+  all.forEach(s => { const d=parseDate(s.date); if(d) { const y=d.getFullYear(); yearCounts[y]=(yearCounts[y]||0)+1; } });
+  const years = Object.keys(yearCounts).map(Number).sort((a,b)=>b-a);
+  // Preferuj bieżący rok jeśli ma dane, w przeciwnym razie ostatni rok z danymi
+  const currentYear = now.getFullYear();
+  const year = yearCounts[currentYear] > 0 ? currentYear : (years[0] || currentYear);
+
   const yearSales = all.filter(s=>{ const d=parseDate(s.date); return d && d.getFullYear()===year; });
-  const yearCosts = costs.filter(c=>{ const d=parseDate(c.date); return d && d.getFullYear()===year; });
+  const yearCostsFilt = costs.filter(c=>{ const d=parseDate(c.date); return d && d.getFullYear()===year; });
   const income = yearSales.reduce((s,x)=>s+pf(x.price),0);
-  const totalCosts = yearCosts.reduce((s,x)=>s+pf(x.amount),0);
+  const totalCosts = yearCostsFilt.reduce((s,x)=>s+pf(x.amount),0);
   const setEl = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
   setEl('yr_income', fmtZl(income));
   setEl('yr_costs',  fmtZl(totalCosts));
   setEl('yr_profit', fmtZl(income-totalCosts));
   setEl('yr_count',  yearSales.length);
 
-  // Month chart
+  // Selector roku (jeśli są dane z wielu lat)
+  const yearTitleEl = document.getElementById('yearPageTitle');
+  if (yearTitleEl) {
+    if (years.length > 1) {
+      yearTitleEl.innerHTML = years.map(y =>
+        `<span onclick="updateYearPageForYear(${y})" style="cursor:pointer;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;${y===year?'background:var(--grad);color:#fff':'color:var(--text3)'}">${y}</span>`
+      ).join('');
+    } else {
+      yearTitleEl.textContent = year;
+    }
+  }
+
+  _renderYearData(year, yearSales, yearCostsFilt, income, totalCosts);
+}
+
+function updateYearPageForYear(year) {
+  const all   = getAllSales();
+  const costs = appState.costs || [];
+  const yearSales = all.filter(s=>{ const d=parseDate(s.date); return d && d.getFullYear()===year; });
+  const yearCostsFilt = costs.filter(c=>{ const d=parseDate(c.date); return d && d.getFullYear()===year; });
+  const income = yearSales.reduce((s,x)=>s+pf(x.price),0);
+  const totalCosts = yearCostsFilt.reduce((s,x)=>s+pf(x.amount),0);
+  const setEl = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  setEl('yr_income', fmtZl(income));
+  setEl('yr_costs',  fmtZl(totalCosts));
+  setEl('yr_profit', fmtZl(income-totalCosts));
+  setEl('yr_count',  yearSales.length);
+
+  // Update year selector highlight
+  const yearTitleEl = document.getElementById('yearPageTitle');
+  if (yearTitleEl) {
+    yearTitleEl.querySelectorAll('span').forEach(s => {
+      const y = parseInt(s.textContent);
+      s.style.background = y===year ? 'var(--grad)' : 'transparent';
+      s.style.color = y===year ? '#fff' : 'var(--text3)';
+    });
+  }
+  _renderYearData(year, yearSales, yearCostsFilt, income, totalCosts);
+}
+
+function _renderYearData(year, yearSales, yearCostsFilt, income, totalCosts) {
   const months = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
   const mData = months.map((name,mi)=>{
     const rev = yearSales.filter(s=>{ const d=parseDate(s.date); return d && d.getMonth()===mi; }).reduce((s,x)=>s+pf(x.price),0);
-    const mc  = yearCosts.filter(x=>{ const d=parseDate(x.date); return d && d.getMonth()===mi; }).reduce((s,x)=>s+pf(x.amount),0);
+    const mc  = yearCostsFilt.filter(x=>{ const d=parseDate(x.date); return d && d.getMonth()===mi; }).reduce((s,x)=>s+pf(x.amount),0);
     const cnt = yearSales.filter(s=>{ const d=parseDate(s.date); return d && d.getMonth()===mi; }).length;
     return {name, rev:Math.round(rev), mc:Math.round(mc), cnt};
   });
@@ -3474,13 +3604,12 @@ function updateYearPage() {
     chartEl.innerHTML = '<div style="display:flex;align-items:flex-end;gap:3px;height:120px">' +
       mData.map(m=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="${m.name}: ${fmtZl(m.rev)}">
         ${m.rev>0?`<div style="font-size:8px;color:var(--text3)">${m.rev}</div>`:''}
-        <div style="width:100%;border-radius:3px 3px 0 0;background:${m.rev>0?'linear-gradient(180deg,var(--purple),var(--bordeaux))':'var(--bg4)'};min-height:2px" style="height:${Math.max(2,Math.round(m.rev/maxRev*100))}%"></div>
+        <div style="width:100%;border-radius:3px 3px 0 0;background:${m.rev>0?'linear-gradient(180deg,var(--purple),var(--bordeaux))':'var(--bg4)'};height:${Math.max(2,Math.round(m.rev/maxRev*100))}%"></div>
         <div style="font-size:9px;color:var(--text3)">${m.name}</div>
       </div>`).join('') +
     '</div>';
   }
 
-  // Table
   const tb = document.getElementById('yearMonthTable');
   if (tb) {
     tb.innerHTML = mData.map(m=>`<tr>
@@ -3500,7 +3629,6 @@ function updateYearPage() {
     </tr>`;
   }
 
-  // Top products
   const pMap = {};
   yearSales.forEach(s=>{ const k=s.name; if(!pMap[k]) pMap[k]={name:k,total:0,count:0}; pMap[k].total+=pf(s.price); pMap[k].count++; });
   const top = Object.values(pMap).sort((a,b)=>b.total-a.total).slice(0,5);
@@ -3619,100 +3747,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ===== DEBOUNCE =====
-function debounce(fn, ms) {
-  let timer;
-  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
-}
-
-// ===== GLOBAL SEARCH =====
-const _debouncedSearch = debounce((q) => {
-  const query = (q || '').toLowerCase().trim();
-  const activePage = document.querySelector('.page.active')?.id;
-  if (activePage === 'page-sales') {
-    document.querySelectorAll('#salesTableBody tr').forEach(row => {
-      row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
-    });
-  } else if (activePage === 'page-products') {
-    document.querySelectorAll('#productsTableBody tr').forEach(row => {
-      row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
-    });
-  }
-}, 250);
-function handleSearch(val) { _debouncedSearch(val); }
-
-// ===== AUTO-REFRESH FROM SHEETS (co 5 min) =====
-let _autoRefreshTimer = null;
-function startAutoRefresh() {
-  stopAutoRefresh();
-  if (!appState.sheetsUrl) return;
-  _autoRefreshTimer = setInterval(async () => {
-    if (!appState.sheetsUrl) return;
-    try {
-      const match = appState.sheetsUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-      if (!match) return;
-      const sheetId = match[1];
-      const gidMatch = appState.sheetsUrl.match(/[#?&]gid=(\d+)/);
-      const gid = gidMatch ? gidMatch[1] : '0';
-      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-      const res = await fetch(csvUrl);
-      if (!res.ok) return;
-      const text = await res.text();
-      const lines = text.trim().split('\n').filter(l=>l.trim());
-      if (lines.length < 2) return;
-      const rows = lines.map(l=>parseCSVLine(l));
-      const header = rows[0];
-      const idx = {
-        product: header.findIndex(h=>/produkt/i.test(h)),
-        price:   header.findIndex(h=>/cena/i.test(h)),
-        status:  header.findIndex(h=>/status/i.test(h)),
-        date:    header.findIndex(h=>/data/i.test(h)),
-        buyer:   header.findIndex(h=>/kupuj/i.test(h)),
-        platform:header.findIndex(h=>/platforma/i.test(h)),
-      };
-      const fresh = rows.slice(1).map(r=>({
-        product:  idx.product>=0?(r[idx.product]||'—'):'—',
-        price:    idx.price>=0?(r[idx.price]||'0'):'0',
-        status:   idx.status>=0?(r[idx.status]||'—'):'—',
-        date:     idx.date>=0?(r[idx.date]||'—'):'—',
-        buyer:    idx.buyer>=0?(r[idx.buyer]||'—'):'—',
-        platform: idx.platform>=0?(r[idx.platform]||'Vinted'):'Vinted',
-      })).filter(r=>r.price!=='0'||r.status!=='—');
-      // Only update if data actually changed
-      if (fresh.length !== appState.syncedData.length ||
-          JSON.stringify(fresh[0]) !== JSON.stringify(appState.syncedData[0])) {
-        const prevLen = appState.syncedData.length;
-        appState.syncedData = fresh;
-        appState.lastSyncTime = new Date().toISOString();
-        saveState();
-        markDirty('sync');
-        const newCount = fresh.length - prevLen;
-        if (newCount > 0) {
-          showToast(`🔔 Nowe zamówienia: +${newCount} z Vinted!`);
-          sendNotification('AllInOne', `Nowe zamówienia: +${newCount} z Vinted!`);
-        }
-        _updateLastSyncUI();
-      }
-    } catch(e) { /* silent fail on auto-refresh */ }
-  }, 5 * 60 * 1000); // co 5 minut
-}
-function stopAutoRefresh() {
-  if (_autoRefreshTimer) { clearInterval(_autoRefreshTimer); _autoRefreshTimer = null; }
-}
-function _updateLastSyncUI() {
-  const el = document.getElementById('lastSync');
-  if (el && appState.lastSyncTime) {
-    el.textContent = new Date(appState.lastSyncTime).toLocaleString('pl-PL');
-  }
-  // Update dash sync badge
-  const badge = document.getElementById('dashSyncBadge');
-  if (badge && appState.lastSyncTime) {
-    badge.textContent = '🟢 Live — ' + new Date(appState.lastSyncTime).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'});
-    badge.style.display = 'inline-flex';
-  }
-}
+// year page is called in renderAll directly
 
 </script>
+<!-- ===== WELCOME MODAL (po rejestracji) ===== -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-modal">
+    <div class="welcome-hero">
+      <div class="welcome-emoji">🎉</div>
+      <div class="welcome-title">Witaj w AllInOne!</div>
+      <div class="welcome-subtitle" id="welcomeUserName">Cieszmy się że jesteś!</div>
+    </div>
+    <div class="welcome-body">
+      <div class="welcome-steps">
+        <div class="welcome-step">
+          <div class="welcome-step-icon">🟢</div>
+          <div class="welcome-step-text"><strong>Krok 1 — Połącz Vinted</strong><br>Synchronizuj zamówienia z Vinted przez Google Sheets jednym kliknięciem.</div>
+        </div>
+        <div class="welcome-step">
+          <div class="welcome-step-icon">📊</div>
+          <div class="welcome-step-text"><strong>Krok 2 — Śledź statystyki</strong><br>Dashboard pokazuje Twoje przychody, zyski i limit podatkowy na żywo.</div>
+        </div>
+        <div class="welcome-step">
+          <div class="welcome-step-icon">🧾</div>
+          <div class="welcome-step-text"><strong>Krok 3 — Raport PIT</strong><br>Jednym kliknięciem wygenerujesz gotowy raport podatkowy do druku.</div>
+        </div>
+      </div>
+      <button class="btn-auth" onclick="closeWelcome()" style="margin-bottom:0">🚀 Zaczynamy!</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== ONBOARDING WIZARD ===== -->
 <div class="wizard-overlay" id="wizardOverlay">
   <div class="wizard-card">
